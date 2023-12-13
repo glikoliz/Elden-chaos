@@ -1,0 +1,37 @@
+[
+    {
+        "name": "HP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 138"
+    },
+    {
+        "name": "FP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 148"
+    },
+    {
+        "name": "SP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 154"
+    },
+    {
+        "name": "MAX_HP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 144"
+    },
+    {
+        "name": "MAX_FP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 150"
+    },
+    {
+        "name": "MAX_SP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 15C"
+    },
+    {
+        "name": "CUTSCENE_ON",
+        "addr": "eventflagman",
+        "offsets": "28 113"
+    }
+]
