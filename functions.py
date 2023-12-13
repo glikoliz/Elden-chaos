@@ -6,5 +6,5 @@ def OHKO(pm, addr):
     sleep(10)
     pm.write_int(addr, basehp)
     return "OHKO"
-if __name__=='__main__':
-    pm=pymem.Pymem('eldenring.exe')
+# if __name__=='__main__':
+    # pm=pymem.Pymem('eldenring.exe')
