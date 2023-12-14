@@ -33,5 +33,10 @@
         "name": "CUTSCENE_ON",
         "addr": "eventflagman",
         "offsets": "28 113"
+    },
+    {
+        "name": "GODRICK",
+        "addr": "eventflagman",
+        "offsets": "28 15B608"
     }
 ]
