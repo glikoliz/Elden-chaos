@@ -10,11 +10,11 @@ def get_address_with_offsets(pm, addr, offsets):
 
 def get_worldchrman(pm, module_data):
     address = pm.base_address + re.search(rb'\x48\x8B\x05....\x48\x85\xC0\x74\x0F\x48\x39\x88', module_data).start()
-    return pm.read_longlong(address+pm.read_int(address+3)+7)
+    return address+pm.read_int(address+3)+7
 
 def get_event_flag_man(pm, module_data):
     address=pm.base_address + re.search(rb'\x48\x8B\x3D....\x48\x85\xFF..\x32\xC0\xE9', module_data).start()
-    return pm.read_longlong(address+pm.read_int(address+3)+7)
+    return address+pm.read_int(address+3)+7
 
 def get_cs_lua_event(pm, module_data):
     address=pm.base_address + re.search(rb'\x48\x8B\x05....\x48\x85\xC0\x74.\x41\xBE\x01\x00\x00\x00\x44\x89\x75', module_data).start()
@@ -29,6 +29,12 @@ def get_fast_travel(pm, module_data):
     # print(address)
     return pm.read_longlong(address+pm.read_int(address+3)+7)+0xA0
 
+def get_spawn_addr(pm, worldchrman):
+    addr=worldchrman
+    # p(addr)
+    addr=pm.read_longlong(addr)+0x1E1C0
+    addr=pm.read_longlong(addr)+0x18
+    return pm.read_longlong(addr)
 
 def alloc_warp(pm, module_data):
     cs_lua_event=get_cs_lua_event(pm, module_data).to_bytes(8, byteorder='little')
@@ -61,8 +67,9 @@ def get_final_list(pm):
     ##### INIT #####
     process_module = pymem.process.module_from_name(pm.process_handle, 'eldenring.exe')
     module_data = pm.read_bytes(pm.base_address, process_module.SizeOfImage)
-    variables = {"worldchrman": get_worldchrman(pm, module_data),
-                 "eventflagman": get_event_flag_man(pm, module_data)}
+    variables = {"worldchrman": pm.read_longlong(get_worldchrman(pm, module_data)),
+                 "eventflagman":pm.read_longlong( get_event_flag_man(pm, module_data))}
+    p(variables)
     final_list={}
     ##### INIT #####
     
@@ -80,6 +87,8 @@ def get_final_list(pm):
         final_list[name]=get_address_with_offsets(pm, addr, list_offsets)
     final_list["WARP_FUNC"], final_list["WARP_LOCATION"]=alloc_warp(pm, module_data)
     final_list["FAST_TRAVEL"]=get_fast_travel(pm, module_data)
+    final_list["WORLDCHRMAN"]=get_worldchrman(pm, module_data)
+    final_list["SPAWN_ADDR"]=get_spawn_addr(pm, final_list['WORLDCHRMAN'])
     return final_list
 
 if __name__=='__main__':
