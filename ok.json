@@ -38,5 +38,35 @@
         "name": "GODRICK",
         "addr": "eventflagman",
         "offsets": "28 15B608"
-    }
+    },
+    {
+        "name": "CHR_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 100"
+    },
+    {
+        "name": "NPC_PARAM_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 F0"
+    },
+    {
+        "name": "NPC_THINK_PARAM_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 F4"
+    },
+    {
+        "name": "EVENT_ENTITY_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 F8"
+    },
+    {
+        "name": "TALK_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 FC"
+    },
+    {
+        "name": "NPC_ENEMY_TYPE",
+        "addr": "worldchrman",
+        "offsets": "1E640 178"
+    }          
 ]
