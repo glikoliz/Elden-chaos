@@ -23,7 +23,13 @@ def goalive():
 pm=pymem.Pymem('eldenring.exe')
 final_list=get_final_list(pm)
 p(final_list)
-call.GODRICK_TIME(pm, final_list)
+import time
+while True:
+    call.spawn_melania(pm, final_list)
+    time.sleep(10)
+    
+call.spawn_melania(pm, final_list)
+# call.GODRICK_TIME(pm, final_list)
 # call.WARP(pm, final_list)
 # call.MANA_LEAK(pm, final_list)
 
