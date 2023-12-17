@@ -68,5 +68,15 @@
         "name": "NPC_ENEMY_TYPE",
         "addr": "worldchrman",
         "offsets": "1E640 178"
-    }          
+    },
+    {
+        "name": "SPAWN_NPC_X",
+        "addr": "worldchrman",
+        "offsets": "1E640 B0"
+    },
+    {
+        "name": "CURRENT_POS",
+        "addr": "worldchrman",
+        "offsets": "1E508 190 68 70"
+    }
 ]
