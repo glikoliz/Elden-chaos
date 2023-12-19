@@ -1,6 +1,6 @@
 import pymem
 from time import sleep
-from random import randint, choice
+from random import randint, choice, shuffle
 from linecache import getline
 class Funcs:
     def disable_fast_travel(pm, final_list):
@@ -8,7 +8,6 @@ class Funcs:
     def enable_fast_travel(pm, final_list): #TODO:can be better
         pm.write_bytes(pm.base_address+0x61F232, b'\xBB\x00\x00\x00\x00\x89\x9E\xA0\x00\x00\x00', 11)
     def warp_to(pm, final_list, grace):
-        print("ALLOCATING WARP_FUNC")
         warp_func=pm.allocate(100)
         cs_lua_event=final_list['CS_LUA_EVENT'].to_bytes(8, byteorder='little')
         lua_warp=final_list['LUA_WARP'].to_bytes(8, byteorder='little')
@@ -27,9 +26,7 @@ class Funcs:
         # addr=pm.allocate(len(bytecode))
         pm.write_bytes(warp_func, bytecode, len(bytecode))
         pm.write_int(warp_loc, grace)
-        print("DO WARP")
         pm.start_thread(warp_func)
-        print("FREE WARP")
         
         pm.free(warp_func)
         
@@ -77,7 +74,16 @@ def get_random_function():
         (MANA_LEAK, "Mana leak"),
         (WARP_TO_RANDOM_GRACE, "Teleport to random grace"),
         (GODRICK_TIME, "Rick, Soldier of God"),
-        (SPAWN_MALENIA, "Spawn Melania")
+        (SPAWN_MALENIA, "Spawn Melania"),
+        (DISABLE_GRAVITY, "Disable gravity"),
+        (GO_REST, "Go rest"),
+        (INVINCIBILITY, "Invincibility"),
+        (INVISIBILITY, "Invisibility"),
+        (GHOST, "Casper mode"),
+        (POOR_TARNISHED, "Poor Tarnished"),
+        (RICH_TARNISHED, "Rich Tarnished"),
+        (CHANGE_GENDER, "Change Gender"),
+        (RANDOM_STATS, "Random Stats")
     ]
     random_function, function_name = choice(functions)
     return random_function, function_name
@@ -105,3 +111,49 @@ def GODRICK_TIME(pm, final_list):
     Funcs.enable_fast_travel(pm, final_list)
 def SPAWN_MALENIA(pm, final_list):
     Funcs.spawn_enemy(pm, final_list, 2120)
+def DISABLE_GRAVITY(pm, final_list):
+    pm.write_bytes(final_list['DISABLE_GRAVITY'], b'\x01', 1)
+    sleep(10)
+    pm.write_bytes(final_list['DISABLE_GRAVITY'], b'\x00', 1)
+def GO_REST(pm, final_list):
+    pm.write_float(final_list['ANIMATION_SPEED'], 0.0)
+    sleep(10)
+    pm.write_float(final_list['ANIMATION_SPEED'], 1.0)
+def INVINCIBILITY(pm, final_list):
+    pm.write_bytes(final_list['NO_DEAD'], b'\x01',1)
+    sleep(10)
+    pm.write_bytes(final_list['NO_DEAD'], b'\x00',1)
+def INVISIBILITY(pm, final_list):
+    pm.write_bytes(final_list['CHR_DBG_FLAGS']+8, b'\x01',1) #hide player
+    pm.write_bytes(final_list['CHR_DBG_FLAGS']+9, b'\x01',1) #silence player
+    # pm.write_int(final_list['CHR_MODEL'], 3)
+    sleep(20)
+    pm.write_bytes(final_list['CHR_DBG_FLAGS']+8, b'\x00',1)
+    pm.write_bytes(final_list['CHR_DBG_FLAGS']+9, b'\x00',1)
+    # pm.write_int(final_list['CHR_MODEL'], 0)
+def GHOST(pm, final_list):
+    pm.write_int(final_list['CHR_MODEL'], 3)
+    sleep(20)
+    pm.write_int(final_list['CHR_MODEL'], 0)
+def POOR_TARNISHED(pm, final_list):
+    pm.write_int(final_list['RUNES'], 0)
+def RICH_TARNISHED(pm, final_list):
+    pm.write_int(final_list['RUNES'], pm.read_int(final_list['TOTAL_RUNES'])//10)
+def CHANGE_GENDER(pm, final_list):
+    if(pm.read_bytes(final_list['GENDER'], 1)==b'\x01'):
+        pm.write_bytes(final_list['GENDER'], b'\x00', 1)
+    else:
+        pm.write_bytes(final_list['GENDER'], b'\x01', 1)
+def RANDOM_STATS(pm, final_list):
+    target_sum=pm.read_int(final_list['CURRENT_LEVEL'])
+    addr=final_list['STATS']
+    if(target_sum>7):
+        numbers = [randint(1, target_sum-7) for _ in range(7)]
+        numbers.append(target_sum - sum(numbers))
+        while any(num < 1 for num in numbers):
+            numbers = [randint(1, target_sum-7) for _ in range(7)]
+            numbers.append(target_sum - sum(numbers))
+        shuffle(numbers)
+        for i in range(8):
+            pm.write_int(addr+4*i,numbers[i])
+    # pass
