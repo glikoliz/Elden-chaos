@@ -36,23 +36,23 @@ def get_spawn_addr(pm, worldchrman):
     addr=pm.read_longlong(addr)+0x18
     return pm.read_longlong(addr)
 
-def alloc_warp(pm, module_data, addr):
-    cs_lua_event=get_cs_lua_event(pm, module_data).to_bytes(8, byteorder='little')
-    lua_warp=get_lua_warp(pm, module_data).to_bytes(8, byteorder='little')
-    bytecode = (
-    b'\x48\x83\xEC\x48'
-    b'\x48\xB8' + cs_lua_event +
-    b'\x48\x8B\x48\x18'
-    b'\x48\x8B\x50\x08' 
-    b'\x8B\x05\x1C\x00\x00\x00'
-    b'\x44\x8D\x80\x18\xFC\xFF\xFF\xFF\x15\x02\x00\x00\x00'
-    b'\xEB\x08' + lua_warp +
-    b'\x48\x83\xC4\x48'
-    b'\xC3' 
-    )
-    # addr=pm.allocate(len(bytecode))
-    pm.write_bytes(addr, bytecode, len(bytecode))
-    return addr, addr+len(bytecode) #return address for warp func and warp location
+# def alloc_warp(pm, module_data, addr):
+#     cs_lua_event=get_cs_lua_event(pm, module_data).to_bytes(8, byteorder='little')
+#     lua_warp=get_lua_warp(pm, module_data).to_bytes(8, byteorder='little')
+#     bytecode = (
+#     b'\x48\x83\xEC\x48'
+#     b'\x48\xB8' + cs_lua_event +
+#     b'\x48\x8B\x48\x18'
+#     b'\x48\x8B\x50\x08' 
+#     b'\x8B\x05\x1C\x00\x00\x00'
+#     b'\x44\x8D\x80\x18\xFC\xFF\xFF\xFF\x15\x02\x00\x00\x00'
+#     b'\xEB\x08' + lua_warp +
+#     b'\x48\x83\xC4\x48'
+#     b'\xC3' 
+#     )
+#     # addr=pm.allocate(len(bytecode))
+#     pm.write_bytes(addr, bytecode, len(bytecode))
+#     return addr, addr+len(bytecode) #return address for warp func and warp location
 
 def p(v):
     if isinstance(v, list):
@@ -89,6 +89,9 @@ def get_final_list(pm):
     final_list["FAST_TRAVEL"]=get_fast_travel(pm, module_data)
     final_list["WORLDCHRMAN"]=get_worldchrman(pm, module_data)
     final_list["SPAWN_ADDR"]=get_spawn_addr(pm, final_list['WORLDCHRMAN'])
+    final_list["LUA_WARP"]=get_lua_warp(pm, module_data)
+    final_list["CS_LUA_EVENT"]=get_cs_lua_event(pm, module_data)
+    
     return final_list
 
 if __name__=='__main__':
