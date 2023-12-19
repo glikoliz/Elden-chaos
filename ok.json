@@ -78,5 +78,50 @@
         "name": "CURRENT_POS",
         "addr": "worldchrman",
         "offsets": "1E508 190 68 70"
+    },
+    {
+        "name": "DISABLE_GRAVITY",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 68 1D3"
+    },
+    {
+        "name": "ANIMATION_SPEED",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 28 17C8"
+    },
+    {
+        "name": "NO_DEAD",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 19B"
+    },
+    {
+        "name": "CHR_MODEL",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 68"
+    },
+    {
+        "name": "RUNES",
+        "addr": "gamedataman",
+        "offsets": "8 6C"
+    },
+    {
+        "name": "TOTAL_RUNES",
+        "addr": "gamedataman",
+        "offsets": "8 70"
+    },
+    {
+        "name": "GENDER",
+        "addr": "gamedataman",
+        "offsets": "8 BE"
+    },
+    {
+        "name": "STATS",
+        "addr": "gamedataman",
+        "offsets": "8 3C"
+    },
+    {
+        "name": "CURRENT_LEVEL",
+        "addr": "gamedataman",
+        "offsets": "8 68"
     }
 ]
