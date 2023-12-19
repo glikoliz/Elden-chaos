@@ -29,13 +29,17 @@ def get_fast_travel(pm, module_data):
     # print(address)
     return pm.read_longlong(address+pm.read_int(address+3)+7)+0xA0
 
+def get_chr_dbg_flags(pm, module_data):
+    address = pm.base_address+re.search(rb'\x80\x3D....\x00\x0F\x85....\x32\xC0\x48', module_data).start()
+    return address+pm.read_int(address+2)+7
 def get_spawn_addr(pm, worldchrman):
     addr=worldchrman
-    # p(addr)
     addr=pm.read_longlong(addr)+0x1E1C0
     addr=pm.read_longlong(addr)+0x18
     return pm.read_longlong(addr)
-
+def get_gamedataman(pm, module_data):
+    address = pm.base_address+re.search(rb'\x48\x8B\x05....\x48\x85\xC0\x74\x05\x48\x8B\x40\x58\xC3\xC3', module_data).start()
+    return address+pm.read_int(address+3)+7
 # def alloc_warp(pm, module_data, addr):
 #     cs_lua_event=get_cs_lua_event(pm, module_data).to_bytes(8, byteorder='little')
 #     lua_warp=get_lua_warp(pm, module_data).to_bytes(8, byteorder='little')
@@ -68,7 +72,8 @@ def get_final_list(pm):
     process_module = pymem.process.module_from_name(pm.process_handle, 'eldenring.exe')
     module_data = pm.read_bytes(pm.base_address, process_module.SizeOfImage)
     variables = {"worldchrman": pm.read_longlong(get_worldchrman(pm, module_data)),
-                 "eventflagman":pm.read_longlong( get_event_flag_man(pm, module_data))}
+                 "eventflagman":pm.read_longlong( get_event_flag_man(pm, module_data)),
+                 'gamedataman': pm.read_longlong(get_gamedataman(pm, module_data))}
     p(variables)
     final_list={}
     ##### INIT #####
@@ -91,6 +96,8 @@ def get_final_list(pm):
     final_list["SPAWN_ADDR"]=get_spawn_addr(pm, final_list['WORLDCHRMAN'])
     final_list["LUA_WARP"]=get_lua_warp(pm, module_data)
     final_list["CS_LUA_EVENT"]=get_cs_lua_event(pm, module_data)
+    final_list["CHR_DBG_FLAGS"]=get_chr_dbg_flags(pm, module_data)
+    
     
     return final_list
 
