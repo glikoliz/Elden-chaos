@@ -1,30 +1,37 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QFrame, QVBoxLayout, QLabel, QDesktopWidget, QPushButton
-from PyQt5.QtCore import QRect, QPropertyAnimation, Qt, QThread, QObject, QTimer
-import keyboard
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QDesktopWidget, QFrame
+from PyQt5.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation
+import pymem
 from time import sleep
-class AnimationController(QObject):
-    def __init__(self, myApp):
+import random
+from getaddress import get_final_list
+import functions as call
+import threading
+pm=None
+class OverlayController(QThread):
+    def __init__(self, overlay):
         super().__init__()
-        self.myApp = myApp
-
+        self.overlay = overlay
+        self.queue=['','','']
+        # self.run()
     def run(self):
-        i = 0
-        ok = ["One", "Two", "Threedasdssadsdasdadsasdasadsdasd", "Four", "Five", "Six"]
-        queue = ["", "", ""]
-        queue.append(ok[i])
-        queue.pop(0)
-        i += 1
-        while True:
-            if keyboard.is_pressed("["):
-                queue.pop(0)
-                queue.append(ok[i])
-                self.myApp.changeText(queue)
-                i += 1
-                QTimer.singleShot(0, self.myApp.start_animation)
-                sleep(1)
-class MyApp(QWidget):
-    def __init__(self):
+        global pm
+        print(pm)
+        
+        if(pm):
+            func, name=call.get_random_function()
+            # sleep(10)
+            threading.Thread(target=func, args=(pm, get_final_list(pm))).start()
+            # threading.Thread(target=call.WARP, args=(pm, get_final_list(pm))).start()
+            self.queue.pop(0)
+            self.queue.append(name)
+            self.overlay.changeText(self.queue)
+        else:
+            print("Couldn't find eldenring.exe")
+        QTimer.singleShot(0, self.overlay.start_animation)
+
+class Overlay(QWidget):
+    def __init__(self, overlay_controller):
         super().__init__()
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -39,23 +46,16 @@ class MyApp(QWidget):
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-
+        self.overlay_controller = overlay_controller
         self.frame = QFrame(self)
         self.frame.setStyleSheet('background-color: red;')
         self.frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
         self.frame.move(0, 0)
-        self.frame.resize(10, 20)
+        self.frame.resize(0, 20)
 
         self.label1 = QLabel("", self)
         self.label2 = QLabel("", self)
         self.label3 = QLabel("", self)
-
-        self.animation_object = QPropertyAnimation(self.frame, b'geometry')
-        self.animation_object.setDuration(5000)  # ms
-        self.animation_object.finished.connect(self.animation_finished)
-        self.animation_object.setStartValue(QRect(0, 0, 0, 20))
-        self.animation_object.setEndValue(QRect(0, 0, 1920, 20))
-
 
     def changeText(self, que):
         screen = QDesktopWidget().screenGeometry()
@@ -65,27 +65,64 @@ class MyApp(QWidget):
         label_width1=self.label1.fontMetrics().width(self.label1.text())
         label_width2=self.label2.fontMetrics().width(self.label2.text())
         label_width3=self.label3.fontMetrics().width(self.label3.text())
-        self.label1.setGeometry(screen.width() - label_width1, self.frame.y() + 30, label_width1, 30)
-        self.label2.setGeometry(screen.width() - label_width2, self.label1.y() + 40, label_width2, 30)
-        self.label3.setGeometry(screen.width() - label_width3, self.label2.y() + 40, label_width3, 30)
+        self.label1.setGeometry(screen.width() - label_width1, self.frame.y() + 30, label_width1, 35)
+        self.label2.setGeometry(screen.width() - label_width2, self.label1.y() + 40, label_width2, 35)
+        self.label3.setGeometry(screen.width() - label_width3, self.label2.y() + 40, label_width3, 35)
         self.layout.setAlignment(Qt.AlignTop | Qt.AlignRight)
     
     def start_animation(self):
+        self.animation_object = QPropertyAnimation(self.frame, b'geometry')
+        self.animation_object.setDuration(15000)  # ms
+        self.animation_object.finished.connect(self.animation_finished)
+        self.animation_object.setStartValue(QRect(0, 0, 0, 20))
+        self.animation_object.setEndValue(QRect(0, 0, 1920, 20))
         self.animation_object.start()
 
     def animation_finished(self):
         print("Animation finished")
-        self.start_animation()
+        # self.start_animation()
+        self.overlay_controller.run()
+
+class MainWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setGeometry(100, 100, 400, 200)
+        self.setWindowTitle('Main Window')
+        self.overlay_controller = OverlayController(None)
+
+        self.overlay = Overlay(self.overlay_controller)
+
+        self.button_open_overlay = QPushButton('Open Overlay', self)
+        self.button_open_overlay.clicked.connect(self.show_overlay)
+        self.label1=QLabel("", self)
+        self.label1.setStyleSheet('''
+            color: green;
+            font-weight: bold;
+            border: 2px solid green;
+            padding: 5px;
+        ''')
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.button_open_overlay)
+        layout.addWidget(self.label1)
+
+    def show_overlay(self):
+        global pm
+        try:
+            pm=pymem.Pymem("eldenring.exe")
+            self.label1.setText("")
+            self.overlay_controller.overlay=self.overlay
+            if not self.overlay.isVisible():
+                self.overlay.showFullScreen()
+                # self.overlay_controller.start()
+                self.overlay_controller.run()
+        except:
+            self.label1.setText("Couldn't find eldenring.exe")
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    
+    main_window = MainWindow()
+    main_window.show()
 
-    myApp = MyApp()
-    myApp.showFullScreen()
-    controller = AnimationController(myApp)
-    thread = QThread()
-    controller.moveToThread(thread)
-    thread.started.connect(controller.run)
-    thread.start()
     sys.exit(app.exec_())
-
