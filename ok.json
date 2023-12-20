@@ -123,5 +123,25 @@
         "name": "CURRENT_LEVEL",
         "addr": "gamedataman",
         "offsets": "8 68"
+    },
+    {
+        "name": "CHR_SIZE",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 58 2D4"
+    },
+    {
+        "name": "ANIMATION",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 58 18"
+    },
+    {
+        "name": "FPS",
+        "addr": "csflipper",
+        "offsets": "2CC"
+    },
+    {
+        "name": "USE_FPS",
+        "addr": "csflipper",
+        "offsets": "2D0"
     }
 ]
