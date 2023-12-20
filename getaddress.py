@@ -40,23 +40,9 @@ def get_spawn_addr(pm, worldchrman):
 def get_gamedataman(pm, module_data):
     address = pm.base_address+re.search(rb'\x48\x8B\x05....\x48\x85\xC0\x74\x05\x48\x8B\x40\x58\xC3\xC3', module_data).start()
     return address+pm.read_int(address+3)+7
-# def alloc_warp(pm, module_data, addr):
-#     cs_lua_event=get_cs_lua_event(pm, module_data).to_bytes(8, byteorder='little')
-#     lua_warp=get_lua_warp(pm, module_data).to_bytes(8, byteorder='little')
-#     bytecode = (
-#     b'\x48\x83\xEC\x48'
-#     b'\x48\xB8' + cs_lua_event +
-#     b'\x48\x8B\x48\x18'
-#     b'\x48\x8B\x50\x08' 
-#     b'\x8B\x05\x1C\x00\x00\x00'
-#     b'\x44\x8D\x80\x18\xFC\xFF\xFF\xFF\x15\x02\x00\x00\x00'
-#     b'\xEB\x08' + lua_warp +
-#     b'\x48\x83\xC4\x48'
-#     b'\xC3' 
-#     )
-#     # addr=pm.allocate(len(bytecode))
-#     pm.write_bytes(addr, bytecode, len(bytecode))
-#     return addr, addr+len(bytecode) #return address for warp func and warp location
+def get_cs_flipper(pm, module_data):
+    address = pm.base_address+re.search(rb'\x48\x8B\x0D....\x80\xBB\xD7\x00\x00\x00\x00\x0F\x84\xCE\x00\x00\x00\x48\x85\xC9\x75\x2E', module_data).start()
+    return address+pm.read_int(address+3)+7
 
 def p(v):
     if isinstance(v, list):
@@ -73,7 +59,8 @@ def get_final_list(pm):
     module_data = pm.read_bytes(pm.base_address, process_module.SizeOfImage)
     variables = {"worldchrman": pm.read_longlong(get_worldchrman(pm, module_data)),
                  "eventflagman":pm.read_longlong( get_event_flag_man(pm, module_data)),
-                 'gamedataman': pm.read_longlong(get_gamedataman(pm, module_data))}
+                 'gamedataman': pm.read_longlong(get_gamedataman(pm, module_data)),
+                 'csflipper' : pm.read_longlong(get_cs_flipper(pm, module_data))}
     p(variables)
     final_list={}
     ##### INIT #####
