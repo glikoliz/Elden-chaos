@@ -128,17 +128,22 @@ def dbg_get_func(i):
         (INVINCIBILITY, "Invincibility"),
         (INVISIBILITY, "Invisibility"),
         (GHOST, "Casper mode"),
-        (RICH_TARNISHED, "Rich Tarnished"),
         (POOR_TARNISHED, "Poor Tarnished"),
         (CHANGE_GENDER, "Change Gender"),
         (RANDOM_STATS, "Random Stats"),
         (SONIC_SPEED, "Sonic Speed"),
-        (SLOW_CHR, "Turtle speed"),
-        (FULL_STAMINA, "Unlimited Stamina"),
+        (SLOW_CHR, "Slow-mo"),
         (LVL1_CROOK, "LVL1 Crook"),
-        (LVL99_BOSS, "LVL99 Boss")
+        (FULL_STAMINA, "Unlimited Stamina"),
+        (LVL99_BOSS, "LVL99 Boss"),
+        # (DWARF_MODE, "5'11 Experience"),
+        # (BIG_BOY, "Big Boy"),
+        (RICH_TARNISHED, "Rich Tarnished"),
+        (BUFF, "Buff"),
+        (HUSSEIN, "Saddam Hussein"),
+        (CYBERPUNK_EXPERIENCE, "Cyberpunk Experience")
     ]
-    return functions[i]
+    return functions[len(functions)-i-1]
 
 
 def OHKO(pm, final_list):
@@ -315,7 +320,8 @@ def CYBERPUNK_EXPERIENCE(pm, final_list):
     pm.write_float(final_list['FPS'], 20.0)
     pm.write_bytes(final_list['USE_FPS'], b'\x01', 1)
     pm.write_int(final_list['ANIMATION'], 60265)
+    sleep(1)
+    pm.write_int(final_list['ANIMATION'], 0)
     sleep(10)
     pm.write_bytes(final_list['USE_FPS'], b'\x00', 1)
-    pm.write_int(final_list['ANIMATION'], 0)
     
