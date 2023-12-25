@@ -1,7 +1,6 @@
-
 *.CT
 everything.py
 test.py
 START GAME.lnk
-__pycache__/functions.cpython-310.pyc
-__pycache__/getaddress.cpython-310.pyc
+test_gui.py
+*.pyc
