@@ -43,7 +43,9 @@ def get_gamedataman(pm, module_data):
 def get_cs_flipper(pm, module_data):
     address = pm.base_address+re.search(rb'\x48\x8B\x0D....\x80\xBB\xD7\x00\x00\x00\x00\x0F\x84\xCE\x00\x00\x00\x48\x85\xC9\x75\x2E', module_data).start()
     return address+pm.read_int(address+3)+7
-
+def get_chr_dbg(pm, module_data):
+    address=pm.base_address+re.search(rb'\x48\x8B\x05....\x41\x83\xFF\x02..\x48\x85\xC0', module_data).start()
+    return address+pm.read_int(address+3)+7
 def p(v):
     if isinstance(v, list):
         print([format(i) for i in v])
@@ -84,6 +86,7 @@ def get_final_list(pm):
     final_list["LUA_WARP"]=get_lua_warp(pm, module_data)
     final_list["CS_LUA_EVENT"]=get_cs_lua_event(pm, module_data)
     final_list["CHR_DBG_FLAGS"]=get_chr_dbg_flags(pm, module_data)
+    final_list["CHR_DBG"]=pm.read_longlong(get_chr_dbg(pm, module_data))
     
     
     return final_list
