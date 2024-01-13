@@ -17,8 +17,8 @@ from PyQt5.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation
 import pymem
 from time import sleep
 import random
-from getaddress import get_final_list
-import functions as call
+from lib.getaddress import get_address_list
+import effects.effects as call
 import threading
 
 pm = None
@@ -39,7 +39,7 @@ class OverlayController(QThread):
         if pm:
             func, name = call.dbg_get_func(self.i)
             self.i += 1
-            threading.Thread(target=func, args=(pm, get_final_list(pm))).start()
+            threading.Thread(target=func, args=(pm, get_address_list(pm))).start()
             # threading.Thread(target=call.WARP, args=(pm, get_final_list(pm))).start()
             self.queue.pop(0)
             self.queue.append(name)
