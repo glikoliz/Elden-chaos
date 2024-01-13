@@ -15,9 +15,9 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation
 import pymem
-from time import sleep
+from time import sleep, time
 import random
-from lib.getaddress import get_address_list
+from lib.getaddress import get_address_list, get_random_func
 import effects.effects as call
 import threading
 
@@ -29,7 +29,7 @@ class OverlayController(QThread):
         super().__init__()
         self.overlay = overlay
         self.queue = ["", "", ""]
-        self.i = 0
+        self.i = 4
         # self.run()
 
     def run(self):
@@ -37,9 +37,10 @@ class OverlayController(QThread):
         # print(pm)
 
         if pm:
-            func, name = call.dbg_get_func(self.i)
+            # func, name = call.dbg_get_func(self.i)
+            func, name=get_random_func(self.i)
             self.i += 1
-            threading.Thread(target=func, args=(pm, get_address_list(pm))).start()
+            threading.Thread(target=func, args=(get_address_list(pm),)).start()
             # threading.Thread(target=call.WARP, args=(pm, get_final_list(pm))).start()
             self.queue.pop(0)
             self.queue.append(name)
@@ -56,17 +57,6 @@ class OverlayController(QThread):
         self.overlay.animation_object.stop()
 
 
-class SettingsWindow(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Settings Window")
-        self.setGeometry(200, 200, 400, 200)
-
-        self.label_settings = QLabel("Settings Page", self)
-
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.label_settings)
-        layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
 
 class Overlay(QWidget):
@@ -97,6 +87,8 @@ class Overlay(QWidget):
         self.label1 = QLabel("", self)
         self.label2 = QLabel("", self)
         self.label3 = QLabel("", self)
+
+
 
     def changeText(self, que):
         screen = QDesktopWidget().screenGeometry()
@@ -134,13 +126,11 @@ class Overlay(QWidget):
 
 class MainWindow(QMainWindow):
     def __init__(self):
+        
         super().__init__()
         menuBar = QMenuBar(self)
         fileMenu = QMenu("&Settings", self)
         menuBar.addMenu(fileMenu)
-        settings_action = QAction("Open Settings", self)
-        settings_action.triggered.connect(self.open_settings)
-        fileMenu.addAction(settings_action)
         self.setMenuBar(menuBar)
         self.setGeometry(100, 100, 400, 200)
         self.setWindowTitle("Main Window")
@@ -172,8 +162,10 @@ class MainWindow(QMainWindow):
         self.button_start.clicked.connect(self.show_overlay)
         self.button_stop.clicked.connect(self.overlay_controller.stop_overlay)
 
+
     def show_overlay(self):
         global pm
+        
         try:
             pm = pymem.Pymem("eldenring.exe")
 
@@ -188,15 +180,15 @@ class MainWindow(QMainWindow):
         except:
             self.label1.setText("Couldn't find eldenring.exe")
 
-    def open_settings(self):
-        settings_window = SettingsWindow()
-        settings_window.exec_()
+
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     main_window = MainWindow()
+
     main_window.show()
+    
 
     sys.exit(app.exec_())

@@ -1,6 +1,7 @@
 import pymem
 import json
 import re
+from importlib import import_module
 
 def get_address_with_offsets(pm, addr, offsets):
     for i in offsets:
@@ -67,7 +68,7 @@ def get_address_list(pm):
     address_list={}
     ##### INIT #####
     
-    with open('addresses.json', 'r') as file:
+    with open('lib/addresses.json', 'r') as file:
         json_data = json.load(file)
     for obj in json_data:
         name=obj["name"]
@@ -90,7 +91,14 @@ def get_address_list(pm):
     
     
     return address_list
-
+def get_random_func(i):
+    with open('effects_list.json', 'r') as json_file:
+        data = json.load(json_file)
+    active_functions = [item for item in data if item.get('active') == 1]
+    effect_module = import_module('effects.effects') 
+    effect_functions = [getattr(effect_module, item['name']) for item in active_functions]
+    
+    return effect_functions[i], active_functions[i].get('description')
 if __name__=='__main__':
     pm = pymem.Pymem('eldenring.exe')
     p(get_address_list(pm))

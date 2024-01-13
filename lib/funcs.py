@@ -2,16 +2,16 @@ from time import sleep
 class Funcs:
     def disable_fast_travel(pm):
         pm.write_bytes(
-            pm.base_address + 0x61F233,
-            b"\x01",
-            1
+            pm.base_address + 0x61F232,
+            b"\xBB\x01\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
+            11
         )
 
     def enable_fast_travel(pm):  # TODO:can be better
         pm.write_bytes(
-            pm.base_address + 0x61F233,
-            b"\x00",
-            1
+            pm.base_address + 0x61F232,
+            b"\xBB\x00\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
+            11
         )
 
     def warp_to(pm, address_list, grace):
