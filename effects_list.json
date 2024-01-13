@@ -1,0 +1,147 @@
+[
+    {
+      "name": "OHKO",
+      "description": "OHKO",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "MANA_LEAK",
+      "description": "Mana Leak",
+      "sleep_time": null,
+      "active": 1
+    },
+    {
+      "name": "WARP_TO_RANDOM_GRACE",
+      "description": "Warp to Random Grace",
+      "sleep_time": null,
+      "active": 1
+    },
+    {
+      "name": "GODRICK_TIME",
+      "description": "Godrick Time",
+      "sleep_time": null,
+      "active": 1
+    },
+    {
+      "name": "SPAWN_MALENIA",
+      "description": "Spawn Malenia",
+      "sleep_time": null,
+      "active": 1
+    },
+    {
+      "name": "DISABLE_GRAVITY",
+      "description": "Disable Gravity",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "GO_REST",
+      "description": "Go Rest",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "INVINCIBILITY",
+      "description": "Invincibility",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "INVISIBILITY",
+      "description": "Invisibility",
+      "sleep_time": 20,
+      "active": 1
+    },
+    {
+      "name": "GHOST",
+      "description": "Ghost",
+      "sleep_time": 20,
+      "active": 1
+    },
+    {
+      "name": "POOR_TARNISHED",
+      "description": "Poor Tarnished",
+      "sleep_time": null,
+      "active": 1
+    },
+    {
+      "name": "RICH_TARNISHED",
+      "description": "Rich Tarnished",
+      "sleep_time": null,
+      "active": 1
+    },
+    {
+      "name": "CHANGE_GENDER",
+      "description": "Change Gender",
+      "sleep_time": null,
+      "active": 1
+    },
+    {
+      "name": "RANDOM_STATS",
+      "description": "Random Stats",
+      "sleep_time": null,
+      "active": 1
+    },
+    {
+      "name": "SONIC_SPEED",
+      "description": "Sonic Speed",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "SLOW_CHR",
+      "description": "Slow Character",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "FULL_STAMINA",
+      "description": "Full Stamina",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "LVL1_CROOK",
+      "description": "Level 1 Crook",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "LVL99_BOSS",
+      "description": "Level 99 Boss",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "DWARF_MODE",
+      "description": "Dwarf Mode",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "BIG_BOY",
+      "description": "Big Boy",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "HUSSEIN",
+      "description": "Hussein",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "BUFF",
+      "description": "Buff",
+      "sleep_time": 10,
+      "active": 1
+    },
+    {
+      "name": "CYBERPUNK_EXPERIENCE",
+      "description": "Cyberpunk Experience",
+      "sleep_time": 10,
+      "active": 1
+    }
+  ]
+  
