@@ -1,4 +1,7 @@
 from time import sleep
+import json
+import pymem
+from lib.getaddress import get_address_with_offsets, get_const_by_name, get_eventflagman
 class Funcs:
     def disable_fast_travel(pm):
         pm.write_bytes(
@@ -35,9 +38,11 @@ class Funcs:
 
         pm.free(warp_func)
 
-    def wait(pm, address_list, wait_time):
+    def wait(wait_time):
         sleep(wait_time)
-        while pm.read_int(address_list["CUTSCENE_ON"]) != 0:
+        eventflagman=pm.read_longlong(get_eventflagman(pm))
+        cutscene_on=get_address_with_offsets(pm, eventflagman, addr_list['CUTSCENE_ON'][1])
+        while pm.read_int(cutscene_on) != 0:
             sleep(0.1)
 
     def change_model_size(pm, addr, x, y, z):
@@ -113,3 +118,11 @@ class Funcs:
         # print(format(l,'X'))
         pm.write_bytes(l, assembly_code, len(assembly_code))
         # print(pm.read_int(l+0x4B))
+if __name__ != "__main__":
+    pm = pymem.Pymem("eldenring.exe")
+    with open('lib/addresses.json', 'r') as file:
+        json_data = json.load(file)
+    addr_list={}
+    for obj in json_data: 
+        name=obj['name']
+        addr_list[name]=[obj['addr'], [int(element, 16) for element in obj['offsets'].split()]]
