@@ -1,7 +1,7 @@
 from time import sleep
 import json
 import pymem
-from lib.getaddress import get_address_with_offsets, get_const_by_name, get_eventflagman
+from lib.getaddress import get_address_with_offsets, get_eventflagman
 class Funcs:
     def disable_fast_travel(pm):
         pm.write_bytes(
