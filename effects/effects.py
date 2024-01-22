@@ -4,12 +4,12 @@ from random import randint, choice, shuffle
 from linecache import getline
 import re
 from lib.funcs import Funcs
-from lib.getaddress import get_worldchrman, get_address_with_offsets, get_const_by_name, get_eventflagman
+from lib.getaddress import get_worldchrman, get_address_with_offsets, get_addr_from_list, get_eventflagman, get_chr_dbg_flags
 import json
 
 def OHKO():
     Funcs.wait(0) #if player in a cutscene wait until it ends
-    const_addr=pm.read_longlong(get_const_by_name(pm, addr_list['MAX_HP'][0])) #worldchrman
+    const_addr=pm.read_longlong(get_addr_from_list(pm, addr_list['MAX_HP'][0])) #worldchrman
     offsets=addr_list['MAX_HP'][1]
     basehp_addr=get_address_with_offsets(pm, const_addr, offsets)
     
@@ -27,7 +27,7 @@ def MANA_LEAK():
     eventflagman=pm.read_longlong(get_eventflagman(pm))
     cutscene_on=get_address_with_offsets(pm, eventflagman, addr_list['CUTSCENE_ON'][1])
     
-    const_addr=pm.read_longlong(get_const_by_name(pm, addr_list['FP'][0])) #worldchrman
+    const_addr=pm.read_longlong(get_addr_from_list(pm, addr_list['FP'][0])) #worldchrman
     offsets=addr_list['FP'][1]
     fp_addr = get_address_with_offsets(pm, const_addr, offsets)
     
@@ -38,224 +38,176 @@ def MANA_LEAK():
         sleep(0.5)
 
 
-# def WARP_TO_RANDOM_GRACE(address_list):
-#     """
-#     Teleport player to a random grace(who would've thought)
-#     """
-#     random_number = int(getline("lib/graces.txt", randint(0, 305)).strip())
-#     Funcs.warp_to(pm, address_list, random_number)
+def WARP_TO_RANDOM_GRACE():
+    random_number = int(getline("lib/graces.txt", randint(0, 305)).strip())
+    Funcs.warp_to(random_number)
 
 
-# def GODRICK_TIME(address_list):
-#     """
-#     Respawns godrick, disable fast travel(you can't escape the god's wrath) and warp you to the Cave of Knowledge grace
-#     """
-#     Funcs.respawn_boss(pm, address_list["GODRICK"])
-#     Funcs.disable_fast_travel(pm)
-#     Funcs.warp_to(pm, address_list, 18002950)
-#     Funcs.wait(pm, address_list, 3)
-#     while (
-#         pm.read_uchar(address_list["GODRICK"]) == 0
-#         and pm.read_int(address_list["CUTSCENE_ON"]) == 0
-#     ):  # wait until godrick(or character) dies
-#         sleep(1)
-#         pass
-#     Funcs.enable_fast_travel(pm)
+def GODRICK_TIME():
+    eventflagman=pm.read_longlong(get_eventflagman(pm))
+    godrick_addr=get_address_with_offsets(pm, eventflagman, addr_list['GODRICK'][1])
+    cutscene_on=get_address_with_offsets(pm, eventflagman, addr_list['CUTSCENE_ON'][1])
+    Funcs.respawn_boss(godrick_addr)
+    Funcs.disable_fast_travel()
+    Funcs.warp_to(18002950)
+    Funcs.wait(3)
+    while (
+        pm.read_uchar(godrick_addr) == 0
+        and pm.read_int(cutscene_on) == 0
+    ):  # wait until godrick(or character) dies
+        sleep(1)
+        pass
+    Funcs.enable_fast_travel()
 
-
-# def SPAWN_MALENIA(address_list):
-#     """
-#     Spawn Malenia(no way)
-#     """
-#     Funcs.spawn_enemy(pm, address_list, 2120)
-
+def SPAWN_MALENIA():
+    Funcs.spawn_enemy(2120)
 
 def DISABLE_GRAVITY():
     Funcs.wait(0)
-    const_addr=pm.read_longlong(get_const_by_name(pm, addr_list['DISABLE_GRAVITY'][0])) #worldchrman
-    offsets=addr_list['DISABLE_GRAVITY'][1]
-    gravity_addr=get_address_with_offsets(pm, const_addr, offsets)
-    
-    pm.write_bytes(gravity_addr, b"\x01", 1)
+    pm.write_bytes(get_addr_from_list(pm, addr_list['DISABLE_GRAVITY']), b"\x01", 1)
     Funcs.wait(20)
-    try:
-        if(pm.read_bytes(gravity_addr, 1)=='\x01'):
-            pm.write_bytes(gravity_addr, b"\x00", 1)
-    except:
-        pass
-    # pm.write_bytes(gravity_addr, b"\x00", 1)
+    pm.write_bytes(get_addr_from_list(pm, addr_list['DISABLE_GRAVITY']), b"\x00", 1)
 
 
-# def GO_REST(address_list): #TODO:Make player invincible while he is afk
-#     """
-#     Player can't move(only rotate)
-#     """
-#     pm.write_float(address_list["ANIMATION_SPEED"], 0.0)
-#     sleep(10)
-#     pm.write_float(address_list["ANIMATION_SPEED"], 1.0)
+def GO_REST(): #TODO:Make player invincible while he is afk
+    Funcs.wait(0)
+    pm.write_float(get_addr_from_list(pm, addr_list['ANIMATION_SPEED']), 0.0)
+    Funcs.wait(10)
+    pm.write_float(get_addr_from_list(pm, addr_list['ANIMATION_SPEED']), 1.0)
 
 
-# def INVINCIBILITY(address_list):
-#     """
-#     Player can't die. Even if he fell from a great height
-#     """
-#     pm.write_bytes(address_list["NO_DEAD"], b"\x01", 1)
-#     sleep(10)
-#     pm.write_bytes(address_list["NO_DEAD"], b"\x00", 1)
+def INVINCIBILITY():
+    Funcs.wait(0)
+    pm.write_bytes(get_addr_from_list(pm, addr_list['NO_DEAD']), b"\x01", 1)
+    Funcs.wait(10)
+    pm.write_bytes(get_addr_from_list(pm, addr_list['NO_DEAD']), b"\x00", 1)
 
 
-# def INVISIBILITY(address_list):
-#     """
-#     Enemies can't see or hear player(unless he attack them(maybe))
-#     """
-#     pm.write_bytes(address_list["CHR_DBG_FLAGS"] + 8, b"\x01", 1)  # hide player
-#     pm.write_bytes(address_list["CHR_DBG_FLAGS"] + 9, b"\x01", 1)  # silence player
-#     # pm.write_int(address_list['CHR_MODEL'], 3)
-#     sleep(20)
-#     pm.write_bytes(address_list["CHR_DBG_FLAGS"] + 8, b"\x00", 1)
-#     pm.write_bytes(address_list["CHR_DBG_FLAGS"] + 9, b"\x00", 1)
-#     # pm.write_int(address_list['CHR_MODEL'], 0)
+def INVISIBILITY():
+    Funcs.wait(0)
+    chr_dbg_flags=get_chr_dbg_flags(pm)
+    pm.write_bytes(chr_dbg_flags + 8, b"\x01", 1)  # hide player
+    pm.write_bytes(chr_dbg_flags + 9, b"\x01", 1)  # silence player
+    Funcs.wait(20)
+    chr_dbg_flags=get_chr_dbg_flags(pm)
+    pm.write_bytes(chr_dbg_flags + 8, b"\x00", 1)
+    pm.write_bytes(chr_dbg_flags + 9, b"\x00", 1)
 
 
-# def GHOST(address_list):
-#     """
-#     Player turns into a ghost(like the other players running around), can't attack or be attacked
-#     """
-#     pm.write_int(address_list["CHR_MODEL"], 3)
-#     sleep(20)
-#     pm.write_int(address_list["CHR_MODEL"], 0)
+def GHOST():
+    Funcs.wait(0)
+    pm.write_int(get_addr_from_list(pm, addr_list['CHR_MODEL']), 3)
+    Funcs.wait(10)
+    pm.write_int(get_addr_from_list(pm, addr_list['CHR_MODEL']), 0)
 
 
-# def POOR_TARNISHED(address_list):
-#     """
-#     Remove all current runes
-#     """
-#     pm.write_int(address_list["RUNES"], 0)
+def POOR_TARNISHED():
+    pm.write_int(get_addr_from_list(pm, addr_list['RUNES']), 0)
 
 
-# def RICH_TARNISHED(address_list):
-#     """
-#     Give player 10% of his total earned runes
-#     """
-#     pm.write_int(
-#         address_list["RUNES"],
-#         pm.read_int(address_list["RUNES"])
-#         + (pm.read_int(address_list["TOTAL_RUNES"]) // 10),
-#     )
+def RICH_TARNISHED():
+    runes_addr=get_addr_from_list(pm, addr_list['RUNES'])
+    pm.write_int(
+        runes_addr,
+        pm.read_int(runes_addr)
+        + (pm.read_int(get_addr_from_list(pm, addr_list['TOTAL_RUNES'])) // 10),
+    )
 
 
-# def CHANGE_GENDER(address_list):
-#     """
-#     Change gender of a player
-#     """
-#     if pm.read_bytes(address_list["GENDER"], 1) == b"\x01":
-#         pm.write_bytes(address_list["GENDER"], b"\x00", 1)
-#     else:
-#         pm.write_bytes(address_list["GENDER"], b"\x01", 1)
+def CHANGE_GENDER():
+    gender_addr=get_addr_from_list(pm, addr_list['GENDER'])
+    if pm.read_bytes(gender_addr, 1) == b"\x01":
+        pm.write_bytes(gender_addr, b"\x00", 1)
+    else:
+        pm.write_bytes(gender_addr, b"\x01", 1)
 
 
-# def RANDOM_STATS(address_list):
-#     """
-#     Redistributes stats of a player randomly
-#     """
-#     target_sum = pm.read_int(address_list["CURRENT_LEVEL"])
-#     addr = address_list["STATS"]
-#     if target_sum > 7:
-#         numbers = [randint(1, target_sum - 7) for _ in range(7)]
-#         numbers.append(target_sum - sum(numbers))
-#         while any(num < 1 for num in numbers):
-#             numbers = [randint(1, target_sum - 7) for _ in range(7)]
-#             numbers.append(target_sum - sum(numbers))
-#         shuffle(numbers)
-#         for i in range(8):
-#             pm.write_int(addr + 4 * i, numbers[i])
-#     # pass
+def RANDOM_STATS():
+    target_sum = pm.read_int(get_addr_from_list(pm,addr_list["CURRENT_LEVEL"]))
+    addr = get_addr_from_list(pm,addr_list["STATS"])
+    if target_sum > 7:
+        numbers = [randint(1, target_sum - 7) for _ in range(7)]
+        numbers.append(target_sum - sum(numbers))
+        while any(num < 1 for num in numbers):
+            numbers = [randint(1, target_sum - 7) for _ in range(7)]
+            numbers.append(target_sum - sum(numbers))
+        shuffle(numbers)
+        for i in range(8):
+            pm.write_int(addr + 4 * i, numbers[i])
 
 
-# def SONIC_SPEED(address_list):
-#     """
-#     Sets the player's animation speed to 3
-#     """
-#     pm.write_float(address_list["ANIMATION_SPEED"], 3.0)
-#     sleep(10)
-#     pm.write_float(address_list["ANIMATION_SPEED"], 1.0)
+def SONIC_SPEED():
+    Funcs.wait(0)
+    pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 3.0)
+    Funcs.wait(10)
+    pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 1.0)
 
 
-# def SLOW_CHR(address_list):
-#     """
-#     Sets the player's animation speed to 0.3
-#     """
-#     pm.write_float(address_list["ANIMATION_SPEED"], 0.3)
-#     sleep(10)
-#     pm.write_float(address_list["ANIMATION_SPEED"], 1.0)
+def SLOW_CHR():
+    Funcs.wait(0)
+    pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 0.3)
+    Funcs.wait(10)
+    pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 1.0)
+
+def FULL_STAMINA():
+    Funcs.wait(0)
+    chr_dbg_flags=get_chr_dbg_flags(pm)
+    pm.write_bytes(chr_dbg_flags + 4, b"\x01", 1)
+    Funcs.wait(10)
+    chr_dbg_flags=get_chr_dbg_flags(pm)
+    pm.write_bytes(chr_dbg_flags + 4, b"\x00", 1)
 
 
-# def FULL_STAMINA(address_list):
-#     """
-#     Give player infinite stamina
-#     """
-#     pm.write_bytes(address_list["CHR_DBG_FLAGS"] + 4, b"\x01", 1)
-#     sleep(10)
-#     pm.write_bytes(address_list["CHR_DBG_FLAGS"] + 4, b"\x00", 1)
+def LVL1_CROOK():
+    Funcs.wait(0)
+    addr = get_addr_from_list(pm, addr_list["STATS"])
+    current_stats = pm.read_bytes(addr, 32)
+    hp, fp = pm.read_int(get_addr_from_list(pm, addr_list["HP"])), pm.read_int(get_addr_from_list(pm, addr_list["FP"]))
+    for i in range(8):
+        pm.write_int(addr + 4 * i, 1)
+    # Funcs.wait(pm, address_list, 10)
+    Funcs.wait(10)
+    pm.write_bytes(get_addr_from_list(pm, addr_list["STATS"]), current_stats, len(current_stats))
+    pm.write_int(get_addr_from_list(pm, addr_list["HP"]), hp)
+    pm.write_int(get_addr_from_list(pm, addr_list["FP"]), fp)
 
 
-# def LVL1_CROOK(address_list):
-#     """
-#     Change level of every stat to 1 for a short period of time
-#     """
-#     addr = address_list["STATS"]
-#     current_stats = pm.read_bytes(addr, 32)
-#     hp, fp = pm.read_int(address_list["HP"]), pm.read_int(address_list["FP"])
-#     for i in range(8):
-#         pm.write_int(addr + 4 * i, 1)
-#     Funcs.wait(pm, address_list, 10)
-#     pm.write_bytes(address_list["STATS"], current_stats, len(current_stats))
-#     pm.write_int(address_list["HP"], hp)
-#     pm.write_int(address_list["FP"], fp)
+def LVL99_BOSS():
+    addr = get_addr_from_list(pm, addr_list["STATS"])
+    current_stats = pm.read_bytes(addr, 32)
+    for i in range(8):
+        pm.write_int(addr + 4 * i, 99)
+    Funcs.wait(10)
+    pm.write_bytes(get_addr_from_list(pm, addr_list["STATS"]), current_stats, len(current_stats))
 
 
-# def LVL99_BOSS(address_list):
-#     """
-#     Change level of every stat to 99 for a short period of time
-#     """
-#     addr = address_list["STATS"]
-#     current_stats = pm.read_bytes(addr, 32)
-#     for i in range(8):
-#         pm.write_int(addr + 4 * i, 99)
-#     Funcs.wait(pm, address_list, 10)
-#     pm.write_bytes(address_list["STATS"], current_stats, len(current_stats))
+def DWARF_MODE():
+    Funcs.wait(0)
+    Funcs.change_model_size(get_addr_from_list(pm, addr_list['CHR_SIZE']), 0.3, 0.3, 0.3)
+    Funcs.wait(10)
+    Funcs.change_model_size(get_addr_from_list(pm, addr_list['CHR_SIZE']), 1.0, 1.0, 1.0)
 
 
-# def DWARF_MODE(address_list):
-#     """
-#     Change character model size to 1/3 of original
-#     """
-#     Funcs.change_model_size(pm, address_list["CHR_SIZE"], 0.3, 0.3, 0.3)
-#     sleep(10)
-#     Funcs.change_model_size(pm, address_list["CHR_SIZE"], 1.0, 1.0, 1.0)
+def BIG_BOY():
+    Funcs.wait(0)
+    Funcs.change_model_size(get_addr_from_list(pm, addr_list['CHR_SIZE']), 2.0, 2.0, 2.0)
+    Funcs.wait(10)
+    Funcs.change_model_size(get_addr_from_list(pm, addr_list['CHR_SIZE']), 1.0, 1.0, 1.0)
 
 
-# def BIG_BOY(address_list):
-#     """
-#     Doubles character model size
-#     """
-#     Funcs.change_model_size(pm, address_list["CHR_SIZE"], 2.0, 2.0, 2.0)
-#     sleep(10)
-#     Funcs.change_model_size(pm, address_list["CHR_SIZE"], 1.0, 1.0, 1.0)
-
-
-# def HUSSEIN(address_list):
-#     """
-#     Set current animation to laying position and turn player red
-#     """
-#     pm.write_int(address_list["ANIMATION"], 67011)
-#     pm.write_float(address_list["ANIMATION_SPEED"], 15.0)
-#     pm.write_int(address_list["CHR_MODEL"], 2)
-#     sleep(0.3)
-#     pm.write_float(address_list["ANIMATION_SPEED"], 1.0)
-#     sleep(10)
-#     pm.write_int(address_list["ANIMATION"], 0)
-#     pm.write_int(address_list["CHR_MODEL"], 0)
+def HUSSEIN():
+    animation=get_addr_from_list(pm, addr_list['ANIMATION'])
+    animation_speed=get_addr_from_list(pm, addr_list['ANIMATION_SPEED'])
+    chr_model=get_addr_from_list(pm, addr_list['CHR_MODEL'])
+    
+    pm.write_int(animation, 67011)
+    pm.write_float(animation_speed, 15.0)
+    pm.write_int(chr_model, 2)
+    sleep(0.3)
+    pm.write_float(animation_speed, 1.0)
+    Funcs.wait(10)
+    pm.write_int(animation, 0)
+    pm.write_int(chr_model, 0)
 
 
 # def BUFF(address_list):  # TODO: make more buffs
@@ -273,17 +225,14 @@ def DISABLE_GRAVITY():
 #     pm.write_bytes(address_list["CHR_DBG_FLAGS"] + 2, b"\x00", 1)
 
 
-# def CYBERPUNK_EXPERIENCE(address_list):
-#     """
-#     Lock fps at 20, use t-pose for a sec and make some noise
-#     """
-#     pm.write_float(address_list["FPS"], 20.0)
-#     pm.write_bytes(address_list["USE_FPS"], b"\x01", 1)
-#     pm.write_int(address_list["ANIMATION"], 60265)
-#     sleep(1)
-#     pm.write_int(address_list["ANIMATION"], 0)
-#     sleep(10)
-#     pm.write_bytes(address_list["USE_FPS"], b"\x00", 1)
+def CYBERPUNK_EXPERIENCE():
+    pm.write_float(get_addr_from_list(pm, addr_list['FPS']), 20.0)
+    pm.write_bytes(get_addr_from_list(pm, addr_list['USE_FPS']), b"\x01", 1)
+    pm.write_int(get_addr_from_list(pm, addr_list['ANIMATION']), 60265)
+    sleep(1.5)
+    pm.write_int(get_addr_from_list(pm, addr_list['ANIMATION']), 0)
+    Funcs.wait(10)
+    pm.write_bytes(get_addr_from_list(pm, addr_list['USE_FPS']), b"\x00", 1)
 
 
 # def wtf(address_list):
