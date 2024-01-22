@@ -1,6 +1,8 @@
+.gitignore
 *.CT
 everything.py
 test.py
 START GAME.lnk
 test_gui.py
 *.pyc
+gui_test.py
