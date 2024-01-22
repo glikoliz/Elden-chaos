@@ -8,25 +8,26 @@ from lib.getaddress import (
     get_lua_warp,
     get_worldchrman,
     get_spawn_addr,
+    get_addr_from_list
 )
 
 
 class Funcs:
-    def disable_fast_travel(pm: Pymem)->None:
+    def disable_fast_travel()->None:
         pm.write_bytes(
             pm.base_address + 0x61F232,
             b"\xBB\x01\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
             11,
         )
 
-    def enable_fast_travel(pm: Pymem)->None:  # TODO:can be better
+    def enable_fast_travel()->None:  # TODO:can be better
         pm.write_bytes(
             pm.base_address + 0x61F232,
             b"\xBB\x00\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
             11,
         )
 
-    def warp_to(pm: Pymem, grace: int)->None:
+    def warp_to(grace_id: int)->None:
         warp_func = pm.allocate(100)
         cs_lua_event = get_cs_lua_event(pm).to_bytes(8, byteorder="little")
         lua_warp = get_lua_warp(pm).to_bytes(8, byteorder="little")
@@ -42,59 +43,50 @@ class Funcs:
         warp_loc = warp_func + len(bytecode)
         # addr=pm.allocate(len(bytecode))
         pm.write_bytes(warp_func, bytecode, len(bytecode))
-        pm.write_int(warp_loc, grace)
+        pm.write_int(warp_loc, grace_id)
         pm.start_thread(warp_func)
 
         pm.free(warp_func)
 
     def wait(wait_time: int)->None:
         sleep(wait_time)
-        eventflagman = pm.read_longlong(get_eventflagman(pm))
-        cutscene_on = get_address_with_offsets(
-            pm, eventflagman, addr_list["CUTSCENE_ON"][1]
-        )
+        cutscene_on = get_addr_from_list(pm, addr_list['CUTSCENE_ON'])
         while pm.read_int(cutscene_on) != 0:
-            sleep(0.1)
+            sleep(0.2)
 
-    def change_model_size(pm: Pymem, addr: int, x: float, y: float, z: float)->None:
+    def change_model_size(addr: int, x: float, y: float, z: float)->None:
         pm.write_float(addr, x)
         pm.write_float(addr + 4, y)
         pm.write_float(addr + 8, z)
 
-    def respawn_boss(pm: Pymem, boss_addr: int)->None:
+    def respawn_boss(boss_addr: int)->None:
         pm.write_uchar(boss_addr, 0)
 
-    def spawn_enemy(pm: Pymem, id: int) -> None:  # TODO:chr_count may be broken
-        worldchrman_addr = get_worldchrman(pm)
-        worldchrman = pm.read_longlong(worldchrman_addr)
-        print(hex(worldchrman))
-        coords_npc_spawn_addr = get_address_with_offsets(
-            pm, worldchrman, addr_list["SPAWN_NPC_X"][1]
-        )
-        current_coords_addr = get_address_with_offsets(
-            pm, worldchrman, addr_list["CURRENT_POS"][1]
-        )
+    def spawn_enemy(id: int) -> None:  # TODO:chr_count may be broken
         pm.write_bytes(
-            coords_npc_spawn_addr, pm.read_bytes(current_coords_addr, 12), 12
+            get_addr_from_list(pm, addr_list['SPAWN_NPC_X']), pm.read_bytes(get_addr_from_list(pm,addr_list['CURRENT_POS']), 12), 12
         )  # WRITE CURRENT POS
 
         # WRITE CHR INFO #
         chr_id = ("c" + str(id)).encode("utf-16le")
-        chr_id_addr = get_address_with_offsets(pm, worldchrman, addr_list["CHR_ID"][1])
-        print(hex(chr_id_addr))
+        chr_id_addr=get_addr_from_list(pm, addr_list['CHR_ID'])
+        # chr_id_addr = get_address_with_offsets(pm, worldchrman, addr_list["CHR_ID"][1])
+        # print(hex(chr_id_addr))
         pm.write_bytes(chr_id_addr, chr_id, len(chr_id))
         pm.write_int(chr_id_addr - 0x10, id * 10000)  # NPC_PARAM_ID
         pm.write_int(chr_id_addr - 0x0C, id * 10000)  # NPC_THINK_PARAM_ID
         pm.write_int(chr_id_addr - 0x08, 0)  # EVENT_ENTITY_ID
         pm.write_int(chr_id_addr - 0x04, 0)  # TALK_ID
         pm.write_bytes(chr_id_addr + 0x78, b"\x00", 1)  # NPC_ENEMY_TYPE
+        
+        worldchrman_addr = get_worldchrman(pm).to_bytes(8, byteorder="little")
         spawned_enemy = get_spawn_addr(pm, worldchrman_addr).to_bytes(
             8, byteorder="little"
         )
         
         assembly_code = (
             b"\x48\xA1"
-            + worldchrman_addr.to_bytes(8, byteorder="little")
+            + worldchrman_addr
             + b"\x48\x8B\x80\x40\xE6\x01\x00"
             b"\xC6\x40\x44\x01"
             b"\x8B\x15\x30\x00\x00\x00"
