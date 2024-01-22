@@ -1,26 +1,35 @@
 from time import sleep
 import json
-import pymem
-from lib.getaddress import get_address_with_offsets, get_eventflagman
+from pymem import Pymem
+from lib.getaddress import (
+    get_address_with_offsets,
+    get_eventflagman,
+    get_cs_lua_event,
+    get_lua_warp,
+    get_worldchrman,
+    get_spawn_addr,
+)
+
+
 class Funcs:
-    def disable_fast_travel(pm):
+    def disable_fast_travel(pm: Pymem)->None:
         pm.write_bytes(
             pm.base_address + 0x61F232,
             b"\xBB\x01\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
-            11
+            11,
         )
 
-    def enable_fast_travel(pm):  # TODO:can be better
+    def enable_fast_travel(pm: Pymem)->None:  # TODO:can be better
         pm.write_bytes(
             pm.base_address + 0x61F232,
             b"\xBB\x00\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
-            11
+            11,
         )
 
-    def warp_to(pm, address_list, grace):
+    def warp_to(pm: Pymem, grace: int)->None:
         warp_func = pm.allocate(100)
-        cs_lua_event = address_list["CS_LUA_EVENT"].to_bytes(8, byteorder="little")
-        lua_warp = address_list["LUA_WARP"].to_bytes(8, byteorder="little")
+        cs_lua_event = get_cs_lua_event(pm).to_bytes(8, byteorder="little")
+        lua_warp = get_lua_warp(pm).to_bytes(8, byteorder="little")
         bytecode = (
             b"\x48\x83\xEC\x48"
             b"\x48\xB8" + cs_lua_event + b"\x48\x8B\x48\x18"
@@ -38,39 +47,55 @@ class Funcs:
 
         pm.free(warp_func)
 
-    def wait(wait_time):
+    def wait(wait_time: int)->None:
         sleep(wait_time)
-        eventflagman=pm.read_longlong(get_eventflagman(pm))
-        cutscene_on=get_address_with_offsets(pm, eventflagman, addr_list['CUTSCENE_ON'][1])
+        eventflagman = pm.read_longlong(get_eventflagman(pm))
+        cutscene_on = get_address_with_offsets(
+            pm, eventflagman, addr_list["CUTSCENE_ON"][1]
+        )
         while pm.read_int(cutscene_on) != 0:
             sleep(0.1)
 
-    def change_model_size(pm, addr, x, y, z):
+    def change_model_size(pm: Pymem, addr: int, x: float, y: float, z: float)->None:
         pm.write_float(addr, x)
         pm.write_float(addr + 4, y)
         pm.write_float(addr + 8, z)
 
-    def respawn_boss(pm, boss_addr):
+    def respawn_boss(pm: Pymem, boss_addr: int)->None:
         pm.write_uchar(boss_addr, 0)
 
-    def spawn_enemy(pm, address_list, id):  # TODO:chr_count may be broken
+    def spawn_enemy(pm: Pymem, id: int) -> None:  # TODO:chr_count may be broken
+        worldchrman_addr = get_worldchrman(pm)
+        worldchrman = pm.read_longlong(worldchrman_addr)
+        print(hex(worldchrman))
+        coords_npc_spawn_addr = get_address_with_offsets(
+            pm, worldchrman, addr_list["SPAWN_NPC_X"][1]
+        )
+        current_coords_addr = get_address_with_offsets(
+            pm, worldchrman, addr_list["CURRENT_POS"][1]
+        )
         pm.write_bytes(
-            address_list["SPAWN_NPC_X"], pm.read_bytes(address_list["CURRENT_POS"], 12), 12
+            coords_npc_spawn_addr, pm.read_bytes(current_coords_addr, 12), 12
         )  # WRITE CURRENT POS
 
         # WRITE CHR INFO #
         chr_id = ("c" + str(id)).encode("utf-16le")
-        pm.write_bytes(address_list["CHR_ID"], chr_id, len(chr_id))
-        pm.write_int(address_list["NPC_PARAM_ID"], id * 10000)
-        pm.write_int(address_list["NPC_THINK_PARAM_ID"], id * 10000)
-        pm.write_int(address_list["EVENT_ENTITY_ID"], 0)
-        pm.write_int(address_list["TALK_ID"], 0)
-        pm.write_bytes(address_list["NPC_ENEMY_TYPE"], b"\x00", 1)
-        # WRITE CHR INFO #
-        spawned_enemy = address_list["SPAWN_ADDR"].to_bytes(8, byteorder="little")
-        worldchrman = address_list["WORLDCHRMAN"].to_bytes(8, byteorder="little")
+        chr_id_addr = get_address_with_offsets(pm, worldchrman, addr_list["CHR_ID"][1])
+        print(hex(chr_id_addr))
+        pm.write_bytes(chr_id_addr, chr_id, len(chr_id))
+        pm.write_int(chr_id_addr - 0x10, id * 10000)  # NPC_PARAM_ID
+        pm.write_int(chr_id_addr - 0x0C, id * 10000)  # NPC_THINK_PARAM_ID
+        pm.write_int(chr_id_addr - 0x08, 0)  # EVENT_ENTITY_ID
+        pm.write_int(chr_id_addr - 0x04, 0)  # TALK_ID
+        pm.write_bytes(chr_id_addr + 0x78, b"\x00", 1)  # NPC_ENEMY_TYPE
+        spawned_enemy = get_spawn_addr(pm, worldchrman_addr).to_bytes(
+            8, byteorder="little"
+        )
+        
         assembly_code = (
-            b"\x48\xA1" + worldchrman + b"\x48\x8B\x80\x40\xE6\x01\x00"
+            b"\x48\xA1"
+            + worldchrman_addr.to_bytes(8, byteorder="little")
+            + b"\x48\x8B\x80\x40\xE6\x01\x00"
             b"\xC6\x40\x44\x01"
             b"\x8B\x15\x30\x00\x00\x00"
             b"\x6B\xD2\x10"
@@ -81,48 +106,19 @@ class Funcs:
             b"\xC3"
         )
         l = pm.allocate(100)
-        # print(format(l,'X'))
         pm.write_bytes(l, assembly_code, len(assembly_code))
         pm.start_thread(l)
-        # print(pm.read_int(l+0x4B))
         pm.free(l)
 
-    def spawn_enemy_to_coords(
-        pm, address_list, id, coords, allocate_mem
-    ):  # TODO:chr_count may be broken
-        pm.write_bytes(address_list["SPAWN_NPC_X"], coords, 12)  # WRITE CURRENT POS
-        print(hex(address_list["SPAWN_NPC_X"]))
-        # WRITE CHR INFO #
-        chr_id = ("c" + str(id)).encode("utf-16le")
-        pm.write_bytes(address_list["CHR_ID"], chr_id, len(chr_id))
-        pm.write_int(address_list["NPC_PARAM_ID"], id * 10000)
-        pm.write_int(address_list["NPC_THINK_PARAM_ID"], id * 10000)
-        pm.write_int(address_list["EVENT_ENTITY_ID"], 0)
-        pm.write_int(address_list["TALK_ID"], 0)
-        pm.write_bytes(address_list["NPC_ENEMY_TYPE"], b"\x00", 1)
-        # WRITE CHR INFO #
-        spawned_enemy = address_list["SPAWN_ADDR"].to_bytes(8, byteorder="little")
-        worldchrman = address_list["WORLDCHRMAN"].to_bytes(8, byteorder="little")
-        assembly_code = (
-            b"\x48\xA1" + worldchrman + b"\x48\x8B\x80\x40\xE6\x01\x00"
-            b"\xC6\x40\x44\x01"
-            b"\x8B\x15\x30\x00\x00\x00"
-            b"\x6B\xD2\x10"
-            b"\x48\xBB" + spawned_enemy + b"\x48\x01\xD3"
-            b"\x8A\x80\x78\x01\x00\x00"
-            b"\x88\x43\x0B"
-            b"\xFF\x05\x11\x00\x00\x00"
-            b"\xC3"
-        )
-        l = allocate_mem
-        # print(format(l,'X'))
-        pm.write_bytes(l, assembly_code, len(assembly_code))
-        # print(pm.read_int(l+0x4B))
+
 if __name__ != "__main__":
-    pm = pymem.Pymem("eldenring.exe")
-    with open('lib/addresses.json', 'r') as file:
+    pm = Pymem("eldenring.exe")
+    with open("lib/addresses.json", "r") as file:
         json_data = json.load(file)
-    addr_list={}
-    for obj in json_data: 
-        name=obj['name']
-        addr_list[name]=[obj['addr'], [int(element, 16) for element in obj['offsets'].split()]]
+    addr_list = {}
+    for obj in json_data:
+        name = obj["name"]
+        addr_list[name] = [
+            obj["addr"],
+            [int(element, 16) for element in obj["offsets"].split()],
+        ]
