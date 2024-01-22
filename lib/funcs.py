@@ -79,14 +79,14 @@ class Funcs:
         pm.write_int(chr_id_addr - 0x04, 0)  # TALK_ID
         pm.write_bytes(chr_id_addr + 0x78, b"\x00", 1)  # NPC_ENEMY_TYPE
         
-        worldchrman_addr = get_worldchrman(pm).to_bytes(8, byteorder="little")
+        worldchrman_addr = get_worldchrman(pm)
         spawned_enemy = get_spawn_addr(pm, worldchrman_addr).to_bytes(
             8, byteorder="little"
         )
         
         assembly_code = (
             b"\x48\xA1"
-            + worldchrman_addr
+            + worldchrman_addr.to_bytes(8, byteorder="little")
             + b"\x48\x8B\x80\x40\xE6\x01\x00"
             b"\xC6\x40\x44\x01"
             b"\x8B\x15\x30\x00\x00\x00"

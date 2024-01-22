@@ -9,10 +9,7 @@ import json
 
 def OHKO():
     Funcs.wait(0) #if player in a cutscene wait until it ends
-    const_addr=pm.read_longlong(get_addr_from_list(pm, addr_list['MAX_HP'][0])) #worldchrman
-    offsets=addr_list['MAX_HP'][1]
-    basehp_addr=get_address_with_offsets(pm, const_addr, offsets)
-    
+    basehp_addr=get_addr_from_list(pm, addr_list['MAX_HP'])    
     basehp=pm.read_int(basehp_addr)
     pm.write_int(basehp_addr, 1)
     Funcs.wait(10)
@@ -24,13 +21,8 @@ def OHKO():
 
 def MANA_LEAK():
     Funcs.wait(0)
-    eventflagman=pm.read_longlong(get_eventflagman(pm))
-    cutscene_on=get_address_with_offsets(pm, eventflagman, addr_list['CUTSCENE_ON'][1])
-    
-    const_addr=pm.read_longlong(get_addr_from_list(pm, addr_list['FP'][0])) #worldchrman
-    offsets=addr_list['FP'][1]
-    fp_addr = get_address_with_offsets(pm, const_addr, offsets)
-    
+    cutscene_on=get_addr_from_list(pm, addr_list['CUTSCENE_ON'])
+    fp_addr=get_addr_from_list(pm, addr_list['FP'])
     fp = pm.read_int(fp_addr)
     while fp >= 3 and pm.read_int(cutscene_on) == 0:
         fp = pm.read_int(fp_addr) - 3
@@ -44,9 +36,8 @@ def WARP_TO_RANDOM_GRACE():
 
 
 def GODRICK_TIME():
-    eventflagman=pm.read_longlong(get_eventflagman(pm))
-    godrick_addr=get_address_with_offsets(pm, eventflagman, addr_list['GODRICK'][1])
-    cutscene_on=get_address_with_offsets(pm, eventflagman, addr_list['CUTSCENE_ON'][1])
+    godrick_addr=get_addr_from_list(pm, addr_list['GODRICK'])
+    cutscene_on=get_addr_from_list(pm, addr_list['CUTSCENE_ON'])
     Funcs.respawn_boss(godrick_addr)
     Funcs.disable_fast_travel()
     Funcs.warp_to(18002950)

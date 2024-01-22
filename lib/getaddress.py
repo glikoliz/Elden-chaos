@@ -1,5 +1,6 @@
 from pymem import Pymem
-
+import json
+from importlib import import_module
 def get_worldchrman(pm: Pymem):
     address = pm.pattern_scan_module(
         rb"\x48\x8B\x05....\x48\x85\xC0\x74\x0F\x48\x39\x88", "eldenring.exe"
@@ -33,8 +34,7 @@ def get_addr_from_list(pm: Pymem, addr_list):
         x=pm.read_longlong(get_cs_flipper(pm))
     else:
         return -1
-    if x != 0:
-        return get_address_with_offsets(pm, x, addr_list[1])
+    return get_address_with_offsets(pm, x, addr_list[1])
 
 
 def get_cs_lua_event(pm: Pymem):
@@ -57,36 +57,36 @@ def get_lua_warp(pm: Pymem) -> int:
 #     # print(address)
 #     return pm.read_longlong(address+pm.read_int(address+3)+7)+0xA0
 
-def get_chr_dbg_flags(pm):
+def get_chr_dbg_flags(pm: Pymem):
     address = pm.pattern_scan_module(rb'\x80\x3D....\x00\x0F\x85....\x32\xC0\x48', 'eldenring.exe')
     return address+pm.read_int(address+2)+7
 
-def get_spawn_addr(pm, worldchrman):
+def get_spawn_addr(pm: Pymem, worldchrman):
     addr = worldchrman
     addr = pm.read_longlong(addr) + 0x1E1C0
     addr = pm.read_longlong(addr) + 0x18
     return pm.read_longlong(addr)
 
 
-def get_gamedataman(pm):
+def get_gamedataman(pm: Pymem):
     address = pm.pattern_scan_module(rb'\x48\x8B\x05....\x48\x85\xC0\x74\x05\x48\x8B\x40\x58\xC3\xC3', 'eldenring.exe')
     return address+pm.read_int(address+3)+7
 
 
-def get_cs_flipper(pm):
+def get_cs_flipper(pm: Pymem):
     address = pm.pattern_scan_module(rb'\x48\x8B\x0D....\x80\xBB\xD7\x00\x00\x00\x00\x0F\x84\xCE\x00\x00\x00\x48\x85\xC9\x75\x2E', 'eldenring.exe')
     return address+pm.read_int(address+3)+7
 # def get_chr_dbg(pm, module_data):
 #     address=pm.base_address+re.search(rb'\x48\x8B\x05....\x41\x83\xFF\x02..\x48\x85\xC0', module_data).start()
 #     return address+pm.read_int(address+3)+7
-# def p(v):
-#     if isinstance(v, list):
-#         print([format(i) for i in v])
-#     elif isinstance(v, dict):
-#         for key, value in v.items():
-#             print(f"{key}  {format(value,'X')}")
-#     else:
-#         print(format(v, 'X'))
+def p(v):
+    if isinstance(v, list):
+        print([format(i) for i in v])
+    elif isinstance(v, dict):
+        for key, value in v.items():
+            print(f"{key}  {format(value,'X')}")
+    else:
+        print(format(v, 'X'))
 
 # def get_address_list(pm):
 #     ##### INIT #####
@@ -123,14 +123,13 @@ def get_cs_flipper(pm):
 
 
 #     return address_list
-# def get_random_func(i):
-#     with open('effects_list.json', 'r') as json_file:
-#         data = json.load(json_file)
-#     active_functions = [item for item in data if item.get('active') == 1]
-#     effect_module = import_module('effects.effects')
-#     effect_functions = [getattr(effect_module, item['name']) for item in active_functions]
-
-#     return effect_functions[i], active_functions[i].get('description')
+def get_random_func(i):
+    with open('effects_list.json', 'r') as json_file:
+        data = json.load(json_file)
+    active_functions = [item for item in data if item.get('active') == 1]
+    effect_module = import_module('effects.effects')
+    effect_functions = [getattr(effect_module, item['name']) for item in active_functions]
+    return effect_functions[i], active_functions[i].get('description')
 # if __name__=='__main__':
 #     pm = Pymem('eldenring.exe')
 #     p(get_address_list(pm))
