@@ -2,24 +2,18 @@ import sys
 from PyQt5.QtWidgets import (
     QApplication,
     QWidget,
-    QPushButton,
     QVBoxLayout,
+    QHBoxLayout,
+    QPushButton,
     QLabel,
-    QDesktopWidget,
     QFrame,
     QMainWindow,
-    QMenuBar,
-    QMenu,
-    QAction,
-    QDialog,
+    QDesktopWidget,
 )
 from PyQt5.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation
 import pymem
-from time import sleep, time
-import random
-from lib.getaddress import get_random_func
-import effects.effects as call
 import threading
+from lib.getaddress import get_random_func
 
 pm = None
 
@@ -33,14 +27,11 @@ class OverlayController(QThread):
 
     def run(self):
         global pm
-        # print(pm)
 
         if pm:
-            # func, name = call.dbg_get_func(self.i)
-            func, name=get_random_func(self.i)
+            func, name = get_random_func(self.i)
             self.i += 1
             threading.Thread(target=func).start()
-            # threading.Thread(target=call.WARP, args=(pm, get_final_list(pm))).start()
             self.queue.pop(0)
             self.queue.append(name)
             self.overlay.changeText(self.queue)
@@ -52,10 +43,7 @@ class OverlayController(QThread):
         self.i = 0
         self.overlay.hide()
         self.overlay.frame.resize(0, 0)
-
         self.overlay.animation_object.stop()
-
-
 
 
 class Overlay(QWidget):
@@ -87,8 +75,6 @@ class Overlay(QWidget):
         self.label2 = QLabel("", self)
         self.label3 = QLabel("", self)
 
-
-
     def changeText(self, que):
         screen = QDesktopWidget().screenGeometry()
         self.label1.setText(que[0])
@@ -113,31 +99,30 @@ class Overlay(QWidget):
         self.animation_object.setDuration(15000)  # ms
         self.animation_object.finished.connect(self.animation_finished)
         self.animation_object.setStartValue(QRect(0, 0, 0, 20))
-        self.animation_object.setEndValue(QRect(0, 0, 1920, 20))
+        self.animation_object.setEndValue(
+            QRect(
+                0,
+                0,
+                QApplication.desktop().screenGeometry().width(),
+                QApplication.desktop().screenGeometry().height() // 50,
+            )
+        )
         self.animation_object.start()
 
     def animation_finished(self):
         print("Animation finished")
-        # self.start_animation()
         if not self.isHidden():
             self.overlay_controller.run()
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QWidget):
     def __init__(self):
-        
         super().__init__()
-        menuBar = QMenuBar(self)
-        fileMenu = QMenu("&Settings", self)
-        menuBar.addMenu(fileMenu)
-        self.setMenuBar(menuBar)
-        self.setGeometry(100, 100, 400, 200)
-        self.setWindowTitle("Main Window")
-        self.overlay_controller = OverlayController(None)
 
+        self.overlay_controller = OverlayController(None)
         self.overlay = Overlay(self.overlay_controller)
 
-        self.button_start = QPushButton("Start mod", self)
+        self.button_start = QPushButton("Start mod(start the game first)", self)
         self.button_stop = QPushButton("Stop mod and hide overlay", self)
 
         self.label1 = QLabel("", self)
@@ -145,49 +130,94 @@ class MainWindow(QMainWindow):
             """
             color: green;
             font-weight: bold;
-            border: 2px solid green;
             padding: 5px;
         """
         )
 
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-
-        central_layout = QVBoxLayout(central_widget)
-        central_layout.addWidget(self.button_start)
-        central_layout.addWidget(self.button_stop)
-        central_layout.addWidget(self.label1)
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.button_start)
+        layout.addWidget(self.button_stop)
+        layout.addWidget(self.label1)
 
         self.button_start.clicked.connect(self.show_overlay)
         self.button_stop.clicked.connect(self.overlay_controller.stop_overlay)
 
-
     def show_overlay(self):
         global pm
-        
+
         try:
             pm = pymem.Pymem("eldenring.exe")
-
             self.label1.setText("")
             self.overlay_controller.overlay = self.overlay
-            # print(self.overlay.isHidden())
             if not self.overlay.isVisible() or self.overlay.isHidden():
                 self.overlay.showFullScreen()
                 self.overlay.setHidden(False)
-                # self.overlay_controller.start()
                 self.overlay_controller.run()
         except:
             self.label1.setText("Couldn't find eldenring.exe")
 
 
+class MainAppWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.widget1 = MainWindow()
+        self.widget2 = QWidget()
+        self.label_in_widget2 = QLabel("Something will be here", self.widget2)
+        self.btn_widget1 = QPushButton("Start Mod")
+        self.btn_widget2 = QPushButton("Config")
+
+        self.widget3 = QWidget()
+        self.label_in_widget3 = QLabel("Something will be here too", self.widget3)
+        self.btn_widget3 = QPushButton("Other")
+
+        self.btn_widget1.clicked.connect(self.showWidget1)
+        self.btn_widget2.clicked.connect(self.showWidget2)
+        self.btn_widget3.clicked.connect(self.showWidget3)
+
+        self.setGeometry(100, 100, 400, 200)
+
+        widgets_layout = QVBoxLayout()
+        widgets_layout.addWidget(self.widget1)
+        widgets_layout.addWidget(self.widget2)
+        widgets_layout.addWidget(self.widget3)
+
+        buttons_layout = QHBoxLayout()
+        buttons_layout.addWidget(self.btn_widget1)
+        buttons_layout.addWidget(self.btn_widget2)
+        buttons_layout.addWidget(self.btn_widget3)
+
+        buttons_layout.setSpacing(0)
+
+        central_widget = QWidget()
+        central_layout = QVBoxLayout(central_widget)
+        central_layout.addLayout(buttons_layout)
+        central_layout.addLayout(widgets_layout)
+
+        self.setCentralWidget(central_widget)
+        self.setWindowTitle("Main window")
+
+        self.widget2.hide()
+        self.widget3.hide()
+
+    def showWidget1(self):
+        self.widget1.show()
+        self.widget2.hide()
+        self.widget3.hide()
+
+    def showWidget2(self):
+        self.widget1.hide()
+        self.widget2.show()
+        self.widget3.hide()
+
+    def showWidget3(self):
+        self.widget1.hide()
+        self.widget2.hide()
+        self.widget3.show()
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-
-    main_window = MainWindow()
-
-    main_window.show()
-    
-
+    main_app_window = MainAppWindow()
+    main_app_window.show()
     sys.exit(app.exec_())
