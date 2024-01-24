@@ -7,7 +7,7 @@ class EffectsApp(QWidget):
     def __init__(self):
         super().__init__()
 
-        with open('effects_list.json', 'r') as file:
+        with open('resources/effects_list.json', 'r') as file:
             effects_data = json.load(file)
 
         layout = QVBoxLayout()
@@ -51,13 +51,13 @@ class EffectsApp(QWidget):
         scroll_data.show()
 
     def save(self):
-        with open('effects_list.json', 'r') as file:
+        with open('resources/effects_list.json', 'r') as file:
             effects_list = json.load(file)
 
         for checkbox, effect_data in zip(self.effect_checkboxes, effects_list):
             effect_data["active"] = int(checkbox.isChecked())
 
-        with open('effects_list.json', 'w') as file:
+        with open('resources/effects_list.json', 'w') as file:
             json.dump(effects_list, file, indent=2)
 
 

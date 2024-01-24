@@ -124,7 +124,7 @@ def p(v):
 
 #     return address_list
 def get_random_func(i):
-    with open('effects_list.json', 'r') as json_file:
+    with open('json/effects_list.json', 'r') as json_file:
         data = json.load(json_file)
     active_functions = [item for item in data if item.get('active') == 1]
     effect_module = import_module('effects.effects')

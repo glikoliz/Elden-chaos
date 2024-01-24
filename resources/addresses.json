@@ -1,0 +1,147 @@
+[
+    {
+        "name": "HP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 138"
+    },
+    {
+        "name": "FP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 148"
+    },
+    {
+        "name": "SP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 154"
+    },
+    {
+        "name": "MAX_HP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 144"
+    },
+    {
+        "name": "MAX_FP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 150"
+    },
+    {
+        "name": "MAX_SP",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 15C"
+    },
+    {
+        "name": "CUTSCENE_ON",
+        "addr": "eventflagman",
+        "offsets": "28 113"
+    },
+    {
+        "name": "GODRICK",
+        "addr": "eventflagman",
+        "offsets": "28 15B608"
+    },
+    {
+        "name": "CHR_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 100"
+    },
+    {
+        "name": "NPC_PARAM_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 F0"
+    },
+    {
+        "name": "NPC_THINK_PARAM_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 F4"
+    },
+    {
+        "name": "EVENT_ENTITY_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 F8"
+    },
+    {
+        "name": "TALK_ID",
+        "addr": "worldchrman",
+        "offsets": "1E640 FC"
+    },
+    {
+        "name": "NPC_ENEMY_TYPE",
+        "addr": "worldchrman",
+        "offsets": "1E640 178"
+    },
+    {
+        "name": "SPAWN_NPC_X",
+        "addr": "worldchrman",
+        "offsets": "1E640 B0"
+    },
+    {
+        "name": "CURRENT_POS",
+        "addr": "worldchrman",
+        "offsets": "1E508 190 68 70"
+    },
+    {
+        "name": "DISABLE_GRAVITY",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 68 1D3"
+    },
+    {
+        "name": "ANIMATION_SPEED",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 28 17C8"
+    },
+    {
+        "name": "NO_DEAD",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 0 19B"
+    },
+    {
+        "name": "CHR_MODEL",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 68"
+    },
+    {
+        "name": "RUNES",
+        "addr": "gamedataman",
+        "offsets": "8 6C"
+    },
+    {
+        "name": "TOTAL_RUNES",
+        "addr": "gamedataman",
+        "offsets": "8 70"
+    },
+    {
+        "name": "GENDER",
+        "addr": "gamedataman",
+        "offsets": "8 BE"
+    },
+    {
+        "name": "STATS",
+        "addr": "gamedataman",
+        "offsets": "8 3C"
+    },
+    {
+        "name": "CURRENT_LEVEL",
+        "addr": "gamedataman",
+        "offsets": "8 68"
+    },
+    {
+        "name": "CHR_SIZE",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 58 2D4"
+    },
+    {
+        "name": "ANIMATION",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 190 58 18"
+    },
+    {
+        "name": "FPS",
+        "addr": "csflipper",
+        "offsets": "2CC"
+    },
+    {
+        "name": "USE_FPS",
+        "addr": "csflipper",
+        "offsets": "2D0"
+    }
+]

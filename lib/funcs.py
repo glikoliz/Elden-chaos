@@ -105,7 +105,7 @@ class Funcs:
 
 if __name__ != "__main__":
     pm = Pymem("eldenring.exe")
-    with open("lib/addresses.json", "r") as file:
+    with open("resources/addresses.json", "r") as file:
         json_data = json.load(file)
     addr_list = {}
     for obj in json_data:
