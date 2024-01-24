@@ -121,15 +121,10 @@ def p(v):
 #     address_list["CHR_DBG_FLAGS"]=get_chr_dbg_flags(pm, module_data)
 #     address_list["CHR_DBG"]=pm.read_longlong(get_chr_dbg(pm, module_data))
 
-
-#     return address_list
 def get_random_func(i):
-    with open('json/effects_list.json', 'r') as json_file:
+    with open('resources/effects_list.json', 'r') as json_file:
         data = json.load(json_file)
     active_functions = [item for item in data if item.get('active') == 1]
     effect_module = import_module('effects.effects')
     effect_functions = [getattr(effect_module, item['name']) for item in active_functions]
     return effect_functions[i], active_functions[i].get('description')
-# if __name__=='__main__':
-#     pm = Pymem('eldenring.exe')
-#     p(get_address_list(pm))
