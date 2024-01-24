@@ -9,12 +9,14 @@ from PyQt5.QtWidgets import (
     QFrame,
     QMainWindow,
     QDesktopWidget,
+    
 )
-from PyQt5.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation
+from PyQt5.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation, QUrl
+from PyQt5.QtGui import QDesktopServices
 import pymem
 import threading
 from lib.getaddress import get_random_func
-from gui.config_gui import EffectsApp
+from dbg.test_gui import EffectsApp
 
 pm = None
 
@@ -164,13 +166,13 @@ class MainAppWindow(QMainWindow):
 
         self.widget1 = MainWindow()
         self.widget2 = EffectsApp()
-        # self.label_in_widget2 = QLabel("Something will be here", self.widget2)
         self.btn_widget1 = QPushButton("Start Mod")
         self.btn_widget2 = QPushButton("Config")
 
         self.widget3 = QWidget()
-        self.label_in_widget3 = QLabel("Something will be here", self.widget3)
         self.btn_widget3 = QPushButton("Other")
+        self.btn_widget3.clicked.connect(self.showWidget3)
+        self.setupWidget3()
 
         self.btn_widget1.clicked.connect(self.showWidget1)
         self.btn_widget2.clicked.connect(self.showWidget2)
@@ -215,8 +217,22 @@ class MainAppWindow(QMainWindow):
         self.widget1.hide()
         self.widget2.hide()
         self.widget3.show()
+    def setupWidget3(self):
+        self.layout_widget3 = QVBoxLayout(self.widget3)
+        
+        layout_button_description = QHBoxLayout()
 
+        description_label = QLabel("GitHub Repository:", self.widget3)
+        layout_button_description.addWidget(description_label)
 
+        self.btn_github = QPushButton("GitHub Repository", self.widget3)
+        self.btn_github.clicked.connect(self.openGitHub)
+        layout_button_description.addWidget(self.btn_github)
+
+        self.layout_widget3.addLayout(layout_button_description)
+    def openGitHub(self):
+        github_url = QUrl("https://github.com/glikoliz/Elden-chaos")
+        QDesktopServices.openUrl(github_url)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_app_window = MainAppWindow()
