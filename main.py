@@ -14,6 +14,7 @@ from PyQt5.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation
 import pymem
 import threading
 from lib.getaddress import get_random_func
+from gui.config_gui import EffectsApp
 
 pm = None
 
@@ -162,20 +163,20 @@ class MainAppWindow(QMainWindow):
         super().__init__()
 
         self.widget1 = MainWindow()
-        self.widget2 = QWidget()
-        self.label_in_widget2 = QLabel("Something will be here", self.widget2)
+        self.widget2 = EffectsApp()
+        # self.label_in_widget2 = QLabel("Something will be here", self.widget2)
         self.btn_widget1 = QPushButton("Start Mod")
         self.btn_widget2 = QPushButton("Config")
 
         self.widget3 = QWidget()
-        self.label_in_widget3 = QLabel("Something will be here too", self.widget3)
+        self.label_in_widget3 = QLabel("Something will be here", self.widget3)
         self.btn_widget3 = QPushButton("Other")
 
         self.btn_widget1.clicked.connect(self.showWidget1)
         self.btn_widget2.clicked.connect(self.showWidget2)
         self.btn_widget3.clicked.connect(self.showWidget3)
 
-        self.setGeometry(100, 100, 400, 200)
+        self.setGeometry(100, 100, 500, 300)
 
         widgets_layout = QVBoxLayout()
         widgets_layout.addWidget(self.widget1)
