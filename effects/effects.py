@@ -1,10 +1,9 @@
 import pymem
-from time import sleep, time
-from random import randint, choice, shuffle
+from time import sleep
+from random import randint, shuffle
 from linecache import getline
-import re
 from lib.funcs import Funcs
-from lib.getaddress import get_worldchrman, get_address_with_offsets, get_addr_from_list, get_eventflagman, get_chr_dbg_flags
+from lib.getaddress import get_addr_from_list, get_chr_dbg_flags
 import json
 
 def OHKO():
@@ -31,7 +30,7 @@ def MANA_LEAK():
 
 
 def WARP_TO_RANDOM_GRACE():
-    random_number = int(getline("lib/graces.txt", randint(0, 305)).strip())
+    random_number = int(getline("resources/graces.txt", randint(0, 305)).strip())
     Funcs.warp_to(random_number)
 
 
@@ -256,7 +255,7 @@ def CYBERPUNK_EXPERIENCE():
 
 if __name__ != "__main__":
     pm = pymem.Pymem("eldenring.exe")
-    with open('lib/addresses.json', 'r') as file:
+    with open('resources/addresses.json', 'r') as file:
         json_data = json.load(file)
     addr_list={}
     for obj in json_data: 
