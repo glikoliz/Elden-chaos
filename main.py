@@ -9,12 +9,20 @@ from PyQt5.QtWidgets import (
     QFrame,
     QMainWindow,
     QDesktopWidget,
-    
+    QMessageBox,
 )
-from PyQt5.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation, QUrl
+from PyQt5.QtCore import (
+    QRect,
+    Qt,
+    QThread,
+    QTimer,
+    QPropertyAnimation,
+    QUrl,
+)
 from PyQt5.QtGui import QDesktopServices
 import pymem
 import threading
+import re
 from lib.getaddress import get_random_func
 from dbg.test_gui import EffectsApp
 
@@ -43,10 +51,11 @@ class OverlayController(QThread):
         QTimer.singleShot(0, self.overlay.start_animation)
 
     def stop_overlay(self):
-        self.i = 0
-        self.overlay.hide()
-        self.overlay.frame.resize(0, 0)
-        self.overlay.animation_object.stop()
+        if self.overlay:
+            self.i = 0
+            self.overlay.hide()
+            self.overlay.frame.resize(0, 0)
+            self.overlay.animation_object.stop()
 
 
 class Overlay(QWidget):
@@ -147,29 +156,33 @@ class MainWindow(QWidget):
 
     def show_overlay(self):
         global pm
-
         try:
             pm = pymem.Pymem("eldenring.exe")
-            self.label1.setText("")
-            self.overlay_controller.overlay = self.overlay
-            if not self.overlay.isVisible() or self.overlay.isHidden():
-                self.overlay.showFullScreen()
-                self.overlay.setHidden(False)
-                self.overlay_controller.run()
         except:
-            self.label1.setText("Couldn't find eldenring.exe")
+            show_error("Couldn't find eldenring.exe\nLoad to the game and then start")
+            return
+        if get_errors(pm) == -1:
+            return
+        self.label1.setText("")
+        self.overlay_controller.overlay = self.overlay
+        if not self.overlay.isVisible() or self.overlay.isHidden():
+            self.overlay.showFullScreen()
+            self.overlay.setHidden(False)
+            self.overlay_controller.run()
+
+            # self.label1.setText("Couldn't find eldenring.exe")
 
 
 class MainAppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.widget1 = MainWindow()
-        self.widget2 = EffectsApp()
+        self.widget_main = MainWindow()
+        self.widget_config = EffectsApp()
         self.btn_widget1 = QPushButton("Start Mod")
         self.btn_widget2 = QPushButton("Config")
 
-        self.widget3 = QWidget()
+        self.widget_other = QWidget()
         self.btn_widget3 = QPushButton("Other")
         self.btn_widget3.clicked.connect(self.showWidget3)
         self.setupWidget3()
@@ -181,9 +194,9 @@ class MainAppWindow(QMainWindow):
         self.setGeometry(100, 100, 500, 300)
 
         widgets_layout = QVBoxLayout()
-        widgets_layout.addWidget(self.widget1)
-        widgets_layout.addWidget(self.widget2)
-        widgets_layout.addWidget(self.widget3)
+        widgets_layout.addWidget(self.widget_main)
+        widgets_layout.addWidget(self.widget_config)
+        widgets_layout.addWidget(self.widget_other)
 
         buttons_layout = QHBoxLayout()
         buttons_layout.addWidget(self.btn_widget1)
@@ -200,39 +213,71 @@ class MainAppWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         self.setWindowTitle("Main window")
 
-        self.widget2.hide()
-        self.widget3.hide()
+        self.widget_config.hide()
+        self.widget_other.hide()
 
     def showWidget1(self):
-        self.widget1.show()
-        self.widget2.hide()
-        self.widget3.hide()
+        self.widget_main.show()
+        self.widget_config.hide()
+        self.widget_other.hide()
 
     def showWidget2(self):
-        self.widget1.hide()
-        self.widget2.show()
-        self.widget3.hide()
+        self.widget_main.hide()
+        self.widget_config.show()
+        self.widget_other.hide()
 
     def showWidget3(self):
-        self.widget1.hide()
-        self.widget2.hide()
-        self.widget3.show()
+        self.widget_main.hide()
+        self.widget_config.hide()
+        self.widget_other.show()
+
     def setupWidget3(self):
-        self.layout_widget3 = QVBoxLayout(self.widget3)
-        
+        self.layout_widget3 = QVBoxLayout(self.widget_other)
+
         layout_button_description = QHBoxLayout()
 
-        description_label = QLabel("GitHub Repository:", self.widget3)
+        description_label = QLabel("GitHub Repository:", self.widget_other)
         layout_button_description.addWidget(description_label)
 
-        self.btn_github = QPushButton("GitHub Repository", self.widget3)
+        self.btn_github = QPushButton("GitHub Repository", self.widget_other)
         self.btn_github.clicked.connect(self.openGitHub)
         layout_button_description.addWidget(self.btn_github)
 
         self.layout_widget3.addLayout(layout_button_description)
+
     def openGitHub(self):
         github_url = QUrl("https://github.com/glikoliz/Elden-chaos")
         QDesktopServices.openUrl(github_url)
+
+
+def show_error(error_message):
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Critical)
+    msg.setText(error_message)
+    msg.setWindowTitle("Error")
+    msg.exec_()
+
+
+def get_errors(pm):  # TODO:make a checkbox to disable this function
+    try:
+        if pymem.Pymem("EasyAntiCheat_EOS.exe"):
+            show_error("EAC isn't disabled")
+            return -1
+    except:
+        pass
+    try:
+        current_version = pm.read_string(pm.base_address + 0x2B76F64, 9).split("#")[0]
+        mod_version = "1.10.2"
+        if current_version != mod_version:
+            show_error(
+                f"Wrong version. Your game version is {current_version}, mod version is {mod_version}"
+            )
+            return -1
+    except:
+        pass
+    return 0
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_app_window = MainAppWindow()
