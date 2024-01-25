@@ -250,6 +250,9 @@ def HUSSEIN():
 
 
 def CYBERPUNK_EXPERIENCE():
+    Funcs.wait(0)
+    collision_addr=pm.pattern_scan_module(b'\xC6\x83\x78\x0D\x00\x00\xFF', 'eldenring.exe')
+    pm.write_bytes(collision_addr, b'\xC6\x83\x78\x0D\x00\x00\x02', 7)
     pm.write_float(get_addr_from_list(pm, addr_list["FPS"]), 20.0)
     pm.write_bytes(get_addr_from_list(pm, addr_list["USE_FPS"]), b"\x01", 1)
     pm.write_int(get_addr_from_list(pm, addr_list["ANIMATION"]), 60265)
@@ -257,6 +260,7 @@ def CYBERPUNK_EXPERIENCE():
     pm.write_int(get_addr_from_list(pm, addr_list["ANIMATION"]), 0)
     Funcs.wait(10)
     pm.write_bytes(get_addr_from_list(pm, addr_list["USE_FPS"]), b"\x00", 1)
+    pm.write_bytes(collision_addr, b'\xC6\x83\x78\x0D\x00\x00\xFF', 7)
 
 
 # def wtf(address_list):
