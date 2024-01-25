@@ -20,11 +20,11 @@ from PyQt5.QtCore import (
     QUrl,
 )
 from PyQt5.QtGui import QDesktopServices
-import pymem
+from pymem import Pymem
 import threading
 import re
 from lib.getaddress import get_random_func
-from dbg.test_gui import EffectsApp
+from gui.config_gui import EffectsApp
 
 pm = None
 
@@ -157,7 +157,7 @@ class MainWindow(QWidget):
     def show_overlay(self):
         global pm
         try:
-            pm = pymem.Pymem("eldenring.exe")
+            pm = Pymem("eldenring.exe")
         except:
             show_error("Couldn't find eldenring.exe\nLoad to the game and then start")
             return
@@ -255,19 +255,22 @@ def show_error(error_message):
     msg.setIcon(QMessageBox.Critical)
     msg.setText(error_message)
     msg.setWindowTitle("Error")
-    msg.exec_()
+    msg.exec()
+    # sys.exit(app.exec())
 
 
 def get_errors(pm):  # TODO:make a checkbox to disable this function
     try:
-        if pymem.Pymem("EasyAntiCheat_EOS.exe"):
-            show_error("EAC isn't disabled")
-            return -1
+        import psutil
+        for proc in psutil.process_iter():
+            if proc.name() == "EasyAntiCheat_EOS.exe":
+                show_error("EAC isn't disabled")
+                return -1
     except:
         pass
     try:
         current_version = pm.read_string(pm.base_address + 0x2B76F64, 9).split("#")[0]
-        mod_version = "1.10.2"
+        mod_version = "1.10.1"
         if current_version != mod_version:
             show_error(
                 f"Wrong version. Your game version is {current_version}, mod version is {mod_version}"
