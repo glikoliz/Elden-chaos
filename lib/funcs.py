@@ -101,7 +101,17 @@ class Funcs:
         pm.write_bytes(l, assembly_code, len(assembly_code))
         pm.start_thread(l)
         pm.free(l)
-
+    def hide_cloth():
+        inject=b'\xE9\x45\xC0\xAC\xFE'
+        code=b'\x90\x90\x90\x90\x90\xE9\xB1\x3F\x53\x01\xF3\x41\x0F\x10\x08\xE9\xA7\x3F\x53\x01'
+        pm.write_bytes(pm.base_address+0x500, code, len(code))
+        pm.write_bytes(pm.base_address+0x15344B6, inject, len(inject))
+        pass
+    def show_cloth():
+        inject=b'\xF3\x41\x0F\x10\x08'
+        code=b'\x90\x90\x90\x90\x90\xE9\xB1\x3F\x53\x01\xF3\x41\x0F\x10\x08\xE9\xA7\x3F\x53\x01'
+        pm.write_bytes(pm.base_address+0x500, b'\x00'*len(code), len(code))
+        pm.write_bytes(pm.base_address+0x15344B6, inject, len(inject))
 
 if __name__ != "__main__":
     pm = Pymem("eldenring.exe")
