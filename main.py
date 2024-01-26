@@ -273,7 +273,7 @@ def get_errors(pm):  # TODO:make a checkbox to disable this function
         mod_version = "1.10.1"
         if current_version != mod_version:
             show_error(
-                f"Wrong version. Your game version is {current_version}, mod version is {mod_version}"
+                f"Wrong version. Your game version is {current_version}, mod version is for {mod_version}"
             )
             return -1
     except:
