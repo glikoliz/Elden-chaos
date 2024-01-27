@@ -8,16 +8,9 @@ from PySide6.QtWidgets import (
     QLabel,
     QFrame,
     QMainWindow,
-    QMessageBox
+    QMessageBox,
 )
-from PySide6.QtCore import (
-    QRect,
-    Qt,
-    QThread,
-    QTimer,
-    QPropertyAnimation,
-    QUrl
-)
+from PySide6.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation, QUrl
 from PySide6.QtGui import QDesktopServices
 from pymem import Pymem
 import threading
@@ -37,16 +30,16 @@ class OverlayController(QThread):
 
     def run(self):
         global pm
-
         if pm:
-            func, name = get_random_func(self.i)
+            func, name, time = get_random_func(self.i)
             self.i += 1
-            threading.Thread(target=func).start()
+            threading.Thread(target=func, args=(time,)).start()
             self.queue.pop(0)
             self.queue.append(name)
             self.overlay.changeText(self.queue)
         else:
             print("Couldn't find eldenring.exe")
+
         QTimer.singleShot(0, self.overlay.start_animation)
 
     def stop_overlay(self):
@@ -262,6 +255,7 @@ def show_error(error_message):
 def get_errors(pm):  # TODO:make a checkbox to disable this function
     try:
         import psutil
+
         for proc in psutil.process_iter():
             if proc.name() == "EasyAntiCheat_EOS.exe":
                 show_error("EAC isn't disabled")
