@@ -27,9 +27,9 @@ class Effect_settings(QWidget):
     def setup_ui(self, default_data):
         print(default_data)
         layout = QVBoxLayout(self)
-        layout.addWidget(self.create_labeled_edit("Description:", self.description_edit, f"Def: {default_data['description']}", ''))
-        layout.addWidget(self.create_labeled_edit("Sleep Time:", self.sleep_time_edit, f"Def: {default_data['sleep_time']}", ''))
-        layout.addWidget(self.create_labeled_edit("Chance:", self.chance_edit, f"Def: {default_data['chance']}", ''))
+        layout.addWidget(self.create_labeled_edit("Description:", self.description_edit, f"Default: {default_data['description']}", ''))
+        layout.addWidget(self.create_labeled_edit("Sleep Time:", self.sleep_time_edit, f"Default: {default_data['sleep_time']}", ''))
+        layout.addWidget(self.create_labeled_edit("Chance:", self.chance_edit, f"Default: {default_data['chance']} (Range is 1-10, don't use more than that)", ''))
 
         layout.addWidget(self.save_button)
         self.save_button.clicked.connect(self.save_data)
@@ -111,11 +111,20 @@ class EffectsApp(QWidget):
         scroll_area.setWidget(effects_widget)
 
         layout.addWidget(scroll_area)
+
+        horizontal_layout = QHBoxLayout()
         scroll_area.hide()
 
         save_button = QPushButton("Save", self)
         save_button.clicked.connect(self.save)
-        layout.addWidget(save_button, alignment=Qt.AlignRight | Qt.AlignBottom)
+        default_button = QPushButton("Default settings", self)
+        default_button.clicked.connect(self.default_settings_return)
+        
+        horizontal_layout.addWidget(save_button)
+        horizontal_layout.addWidget(default_button)
+
+        layout.addLayout(horizontal_layout)
+        
         self.setGeometry(100, 100, 500, 300)
 
         self.setLayout(layout)
@@ -133,6 +142,13 @@ class EffectsApp(QWidget):
 
         for checkbox, effect_data in zip(self.effect_checkboxes, effects_list):
             effect_data["active"] = int(checkbox.isChecked())
+
+        with open('resources/effects_list.json', 'w') as file:
+            json.dump(effects_list, file, indent=2)
+            
+    def default_settings_return(self):
+        with open('resources/default_effects.json', 'r') as file:
+            effects_list = json.load(file)
 
         with open('resources/effects_list.json', 'w') as file:
             json.dump(effects_list, file, indent=2)
