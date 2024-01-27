@@ -59,7 +59,12 @@ def get_lua_warp(pm: Pymem) -> int:
     )
     return address + 2
 
-
+def get_chr_count_and_set(pm:Pymem):
+    worldchrman=pm.read_longlong(get_worldchrman(pm))
+    chrset=pm.read_longlong(worldchrman+0x1E1C8)
+    chr_count=pm.read_int(chrset+0x20)
+    chrset=pm.read_longlong(chrset+0x18)
+    return chr_count, chrset
 # def get_fast_travel(pm, module_data):
 #     address = pm.base_address+re.search(rb'\x48\x8B\x0D....\x48...\x44\x0F\xB6\x61.\xE8....\x48\x63\x87....\x48...\x48\x85\xC0', module_data).start()
 #     # print(address)
