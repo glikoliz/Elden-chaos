@@ -8,25 +8,25 @@
   {
     "name": "MANA_LEAK",
     "description": "Mana Leak",
-    "sleep_time": null,
+    "sleep_time": 0,
     "active": 1
   },
   {
     "name": "WARP_TO_RANDOM_GRACE",
     "description": "Warp to Random Grace",
-    "sleep_time": null,
+    "sleep_time": 0,
     "active": 1
   },
   {
     "name": "GODRICK_TIME",
     "description": "Godrick Time",
-    "sleep_time": null,
+    "sleep_time": 0,
     "active": 1
   },
   {
     "name": "SPAWN_MALENIA",
     "description": "Spawn Malenia",
-    "sleep_time": null,
+    "sleep_time": 0,
     "active": 1
   },
   {
@@ -50,37 +50,37 @@
   {
     "name": "INVISIBILITY",
     "description": "Invisibility",
-    "sleep_time": 20,
+    "sleep_time": 10,
     "active": 1
   },
   {
     "name": "GHOST",
     "description": "Ghost",
-    "sleep_time": 20,
+    "sleep_time": 10,
     "active": 1
   },
   {
     "name": "POOR_TARNISHED",
     "description": "Poor Tarnished",
-    "sleep_time": null,
+    "sleep_time": 0,
     "active": 1
   },
   {
     "name": "RICH_TARNISHED",
     "description": "Rich Tarnished",
-    "sleep_time": null,
+    "sleep_time": 0,
     "active": 1
   },
   {
     "name": "CHANGE_GENDER",
     "description": "Change Gender",
-    "sleep_time": null,
+    "sleep_time": 0,
     "active": 1
   },
   {
     "name": "RANDOM_STATS",
     "description": "Random Stats",
-    "sleep_time": null,
+    "sleep_time": 0,
     "active": 0
   },
   {
@@ -115,7 +115,7 @@
   },
   {
     "name": "DWARF_MODE",
-    "description": "Dwarf Mode",
+    "description": "5'11 experience",
     "sleep_time": 10,
     "active": 1
   },
@@ -141,6 +141,30 @@
     "name": "CYBERPUNK_EXPERIENCE",
     "description": "Cyberpunk Experience",
     "sleep_time": 10,
+    "active": 1
+  },
+  {
+    "name": "RANDOM_MODEL_SIZE",
+    "description": "Random Model Size",
+    "sleep_time": 10,
+    "active": 1
+  },
+  {
+    "name": "SPEED_EVERYONE",
+    "description": "Everyone is faster",
+    "sleep_time": 10,
+    "active": 1
+  },
+  {
+    "name": "SLOW_EVERYONE",
+    "description": "Everyone is slower",
+    "sleep_time": 10,
+    "active": 1
+  },
+  {
+    "name": "TP_EVERYONE_TO_PLAYER",
+    "description": "Teleport every enemy to player",
+    "sleep_time": 0,
     "active": 1
   }
 ]
