@@ -3,7 +3,7 @@ from time import sleep
 from random import randint, shuffle, uniform
 from linecache import getline
 from lib.funcs import Funcs
-from lib.getaddress import get_addr_from_list, get_chr_dbg_flags
+from lib.getaddress import get_addr_from_list, get_chr_dbg_flags, get_worldchrman, get_address_with_offsets, get_chr_count_and_set
 import json
 
 
@@ -262,34 +262,49 @@ def CYBERPUNK_EXPERIENCE():
     pm.write_bytes(get_addr_from_list(pm, addr_list["USE_FPS"]), b"\x00", 1)
     pm.write_bytes(collision_addr, b'\xC6\x83\x78\x0D\x00\x00\xFF', 7)
 
+def SPEED_EVERYONE():
+    chr_count, chrset=get_chr_count_and_set(pm)
+    for i in range(1, chr_count):
+        enemyins=pm.read_longlong(chrset+i*0x10)
+        if(enemyins):
+            speed=get_address_with_offsets(pm, enemyins, [0x190, 0x28, 0x17C8])
+            pm.write_float(speed, 2.0)
+    Funcs.wait(10)
+    chr_count, chrset=get_chr_count_and_set(pm)
+    for i in range(1, chr_count):
+        enemyins=pm.read_longlong(chrset+i*0x10)
+        if(enemyins):
+            speed=get_address_with_offsets(pm, enemyins, [0x190, 0x28, 0x17C8])
+            pm.write_float(speed, 1.0)
+        
+def SLOW_EVERYONE():
+    chr_count, chrset=get_chr_count_and_set(pm)
+    for i in range(1, chr_count):
+        enemyins=pm.read_longlong(chrset+i*0x10)
+        if(enemyins):
+            speed=get_address_with_offsets(pm, enemyins, [0x190, 0x28, 0x17C8])
+            pm.write_float(speed, 0.3)
+    Funcs.wait(10)
+    chr_count, chrset=get_chr_count_and_set(pm)
+    for i in range(1, chr_count):
+        enemyins=pm.read_longlong(chrset+i*0x10)
+        if(enemyins):
+            speed=get_address_with_offsets(pm, enemyins, [0x190, 0x28, 0x17C8])
+            pm.write_float(speed, 1.0)
 
-# def wtf(address_list):
-#     fir = address_list["CHR_DBG"]
-#     pattern = re.compile(rb"\x90\x3D\xFC\x6F\xF6\x7F\x00\x00")
-#     start_time = time()
-
-#     module_data = pm.read_bytes(fir, 0x2806F000)
-#     matches = [match.start() for match in re.finditer(pattern, module_data)]
-#     alloc = pm.allocate(100)
-
-#     count = 0
-#     for start in matches:
-#         addr = fir + start
-#         hp_addr = pm.read_longlong(pm.read_longlong(addr + 0x190)) + 0x138
-#         coords = pm.read_longlong(pm.read_longlong(addr + 0x190) + 0x68) + 0x70
-
-#         if pm.read_bytes(addr + 0x6C, 1) == b"\x06" and pm.read_int(hp_addr) >= 100:
-#             Funcs.spawn_enemy_to_coords(
-#                 pm, address_list, 2120, pm.read_bytes(coords, 12), alloc
-#             )
-#             # p(addr)
-#             count += 1
-#             pm.start_thread(alloc)
-#             # print(pm.read_int(hp_addr))
-#             # pm.write_int(hp_addr, 0)
-#     print("--- %s seconds ---" % (time() - start_time))
-#     print(count)
-
+def TP_EVERYONE_TO_PLAYER():
+    player_coords=get_addr_from_list(pm, addr_list['CURRENT_POS'])
+    chr_count, chrset=get_chr_count_and_set(pm)
+    player_x,player_y,player_z=pm.read_float(player_coords), pm.read_float(player_coords+0x04), pm.read_float(player_coords+0x08)
+    for i in range(1, chr_count):
+        enemyins=pm.read_longlong(chrset+i*0x10)
+        if(enemyins):
+            alliance=get_address_with_offsets(pm, enemyins, [0x6C])
+            if(pm.read_bytes(alliance, 1)==b'\x06'):
+                coords=get_address_with_offsets(pm, enemyins, [0x190, 0x68, 0x0])+0x70
+                pm.write_float(coords, player_x)
+                pm.write_float(coords+0x04, player_y)
+                pm.write_float(coords+0x08, player_z)
 
 if __name__ != "__main__":
     pm = pymem.Pymem("eldenring.exe")
