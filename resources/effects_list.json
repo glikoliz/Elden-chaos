@@ -18,14 +18,14 @@
     "description": "Warp to Random Grace",
     "sleep_time": 0,
     "active": 1,
-    "chance": 5
+    "chance": 3
   },
   {
     "name": "GODRICK_TIME",
     "description": "Godrick Time",
     "sleep_time": 0,
     "active": 1,
-    "chance": 5
+    "chance": 2
   },
   {
     "name": "SPAWN_MALENIA",
@@ -46,49 +46,49 @@
     "description": "Go Rest",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 4
   },
   {
     "name": "INVINCIBILITY",
     "description": "Invincibility",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 6
   },
   {
     "name": "INVISIBILITY",
     "description": "Invisibility",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 6
   },
   {
     "name": "GHOST",
     "description": "Ghost",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 4
   },
   {
     "name": "POOR_TARNISHED",
     "description": "Poor Tarnished",
     "sleep_time": 0,
     "active": 1,
-    "chance": 5
+    "chance": 6
   },
   {
     "name": "RICH_TARNISHED",
     "description": "Rich Tarnished",
     "sleep_time": 0,
     "active": 1,
-    "chance": 5
+    "chance": 4
   },
   {
     "name": "CHANGE_GENDER",
     "description": "Change Gender",
     "sleep_time": 0,
     "active": 1,
-    "chance": 5
+    "chance": 2
   },
   {
     "name": "RANDOM_STATS",
@@ -123,14 +123,14 @@
     "description": "Level 1 Crook",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 4
   },
   {
     "name": "LVL99_BOSS",
     "description": "Level 99 Boss",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 4
   },
   {
     "name": "DWARF_MODE",
@@ -151,7 +151,7 @@
     "description": "Hussein",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 4
   },
   {
     "name": "BUFF",
@@ -165,28 +165,28 @@
     "description": "Cyberpunk Experience",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 4
   },
   {
     "name": "RANDOM_MODEL_SIZE",
     "description": "Random Model Size",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 6
   },
   {
     "name": "SPEED_EVERYONE",
     "description": "Everyone is faster",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 6
   },
   {
     "name": "SLOW_EVERYONE",
     "description": "Everyone is slower",
     "sleep_time": 10,
     "active": 1,
-    "chance": 5
+    "chance": 6
   },
   {
     "name": "TP_EVERYONE_TO_PLAYER",
@@ -200,6 +200,6 @@
     "description": "Teleport player to closest enemy",
     "sleep_time": 0,
     "active": 1,
-    "chance": 5
+    "chance": 6
   }
 ]
