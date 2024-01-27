@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import (
+from PySide6.QtWidgets import (
     QApplication,
     QWidget,
     QVBoxLayout,
@@ -8,18 +8,17 @@ from PyQt5.QtWidgets import (
     QLabel,
     QFrame,
     QMainWindow,
-    QDesktopWidget,
-    QMessageBox,
+    QMessageBox
 )
-from PyQt5.QtCore import (
+from PySide6.QtCore import (
     QRect,
     Qt,
     QThread,
     QTimer,
     QPropertyAnimation,
-    QUrl,
+    QUrl
 )
-from PyQt5.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices
 from pymem import Pymem
 import threading
 import re
@@ -61,6 +60,7 @@ class OverlayController(QThread):
 class Overlay(QWidget):
     def __init__(self, overlay_controller):
         super().__init__()
+        # print(self.screen())
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setStyleSheet(
@@ -81,28 +81,28 @@ class Overlay(QWidget):
         self.frame.setStyleSheet("background-color: red;")
         self.frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
         self.frame.move(0, 0)
-        self.frame.resize(1920, 20)
+        self.frame.resize(self.screen().size().width(), 20)
 
         self.label1 = QLabel("", self)
         self.label2 = QLabel("", self)
         self.label3 = QLabel("", self)
 
     def changeText(self, que):
-        screen = QDesktopWidget().screenGeometry()
+        screen = self.screen().size().width()
         self.label1.setText(que[0])
         self.label2.setText(que[1])
         self.label3.setText(que[2])
-        label_width1 = self.label1.fontMetrics().width(self.label1.text())
-        label_width2 = self.label2.fontMetrics().width(self.label2.text())
-        label_width3 = self.label3.fontMetrics().width(self.label3.text())
+        label_width1 = self.label1.fontMetrics().horizontalAdvance(self.label1.text())
+        label_width2 = self.label2.fontMetrics().horizontalAdvance(self.label2.text())
+        label_width3 = self.label3.fontMetrics().horizontalAdvance(self.label3.text())
         self.label1.setGeometry(
-            screen.width() - label_width1, self.frame.y() + 30, label_width1, 35
+            screen - label_width1, self.frame.y() + 30, label_width1, 35
         )
         self.label2.setGeometry(
-            screen.width() - label_width2, self.label1.y() + 40, label_width2, 35
+            screen - label_width2, self.label1.y() + 40, label_width2, 35
         )
         self.label3.setGeometry(
-            screen.width() - label_width3, self.label2.y() + 40, label_width3, 35
+            screen - label_width3, self.label2.y() + 40, label_width3, 35
         )
         self.layout.setAlignment(Qt.AlignTop | Qt.AlignRight)
 
@@ -115,8 +115,8 @@ class Overlay(QWidget):
             QRect(
                 0,
                 0,
-                QApplication.desktop().screenGeometry().width(),
-                QApplication.desktop().screenGeometry().height() // 50,
+                self.screen().size().width(),
+                self.screen().size().height() // 50,
             )
         )
         self.animation_object.start()
@@ -285,4 +285,4 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_app_window = MainAppWindow()
     main_app_window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

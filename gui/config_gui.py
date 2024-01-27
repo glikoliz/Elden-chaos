@@ -1,6 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QCheckBox, QScrollArea, QPushButton
-from PyQt5.QtCore import Qt
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QCheckBox, QScrollArea, QPushButton
+from PySide6.QtCore import Qt
 import json
 
 class EffectsApp(QWidget):
@@ -18,7 +18,7 @@ class EffectsApp(QWidget):
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        scroll_area.setHorizontalScrollBarPolicy(0) 
+        # scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy) 
         toggle_checkbox = QCheckBox("Show/Hide effects")
         toggle_checkbox.setChecked(False)
         toggle_checkbox.stateChanged.connect(lambda state: self.toggle_effects(effects_widget, state, scroll_area))
