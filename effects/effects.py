@@ -278,20 +278,20 @@ def CYBERPUNK_EXPERIENCE(sleep_time: int):
 def SPEED_EVERYONE(sleep_time: int):
     chr_count, chrset = get_chr_count_and_set(pm)
     for i in range(1, chr_count):
-        enemyins = pm.read_longlong(chrset + i * 0x10)
-        if enemyins:
+        enemy_addr = pm.read_longlong(chrset + i * 0x10)
+        if enemy_addr:
             try:
-                speed = get_address_with_offsets(pm, enemyins, [0x190, 0x28, 0x17C8])
+                speed = get_address_with_offsets(pm, enemy_addr, [0x190, 0x28, 0x17C8])
                 pm.write_float(speed, 2.0)
             except:
                 pass
     Funcs.wait(sleep_time)
     chr_count, chrset = get_chr_count_and_set(pm)
     for i in range(1, chr_count):
-        enemyins = pm.read_longlong(chrset + i * 0x10)
-        if enemyins:
+        enemy_addr = pm.read_longlong(chrset + i * 0x10)
+        if enemy_addr:
             try:
-                speed = get_address_with_offsets(pm, enemyins, [0x190, 0x28, 0x17C8])
+                speed = get_address_with_offsets(pm, enemy_addr, [0x190, 0x28, 0x17C8])
                 pm.write_float(speed, 1.0)
             except:
                 pass
@@ -300,20 +300,20 @@ def SPEED_EVERYONE(sleep_time: int):
 def SLOW_EVERYONE(sleep_time: int):
     chr_count, chrset = get_chr_count_and_set(pm)
     for i in range(1, chr_count):
-        enemyins = pm.read_longlong(chrset + i * 0x10)
-        if enemyins:
+        enemy_addr = pm.read_longlong(chrset + i * 0x10)
+        if enemy_addr:
             try:
-                speed = get_address_with_offsets(pm, enemyins, [0x190, 0x28, 0x17C8])
+                speed = get_address_with_offsets(pm, enemy_addr, [0x190, 0x28, 0x17C8])
                 pm.write_float(speed, 0.3)
             except:
                 pass
     Funcs.wait(sleep_time)
     chr_count, chrset = get_chr_count_and_set(pm)
     for i in range(1, chr_count):
-        enemyins = pm.read_longlong(chrset + i * 0x10)
-        if enemyins:
+        enemy_addr = pm.read_longlong(chrset + i * 0x10)
+        if enemy_addr:
             try:
-                speed = get_address_with_offsets(pm, enemyins, [0x190, 0x28, 0x17C8])
+                speed = get_address_with_offsets(pm, enemy_addr, [0x190, 0x28, 0x17C8])
                 pm.write_float(speed, 1.0)
             except:
                 pass
@@ -328,13 +328,13 @@ def TP_EVERYONE_TO_PLAYER(sleep_time: int):
         pm.read_float(player_coords + 0x08),
     )
     for i in range(1, chr_count):
-        enemyins = pm.read_longlong(chrset + i * 0x10)
-        if enemyins:
+        enemy_addr = pm.read_longlong(chrset + i * 0x10)
+        if enemy_addr:
             try:
-                alliance = get_address_with_offsets(pm, enemyins, [0x6C])
+                alliance = get_address_with_offsets(pm, enemy_addr, [0x6C])
                 if pm.read_bytes(alliance, 1) == b"\x06":
                     coords = (
-                        get_address_with_offsets(pm, enemyins, [0x190, 0x68, 0x0])
+                        get_address_with_offsets(pm, enemy_addr, [0x190, 0x68, 0x0])
                         + 0x70
                     )
                     pm.write_float(coords, player_x)
@@ -342,6 +342,35 @@ def TP_EVERYONE_TO_PLAYER(sleep_time: int):
                     pm.write_float(coords + 0x08, player_z)
             except:
                 pass
+
+
+def TP_PLAYER_TO_NEARBY_ENEMY(sleep_time: int): #TODO: Works only with openworld enemies, not in dungeons
+    chr_count, chrset = get_chr_count_and_set(pm)
+    player_coords = get_addr_from_list(pm, ["worldchrman", [124168, 400, 104, 112]])
+    min_distance = [-1, 10000]  # addr, distance
+    player_x, player_y, player_z = (
+        pm.read_float(player_coords),
+        pm.read_float(player_coords + 0x04),
+        pm.read_float(player_coords + 0x08),
+    )
+    for i in range(1, chr_count):
+        enemy_addr = pm.read_longlong(chrset + i * 0x10)
+        if enemy_addr:
+            alliance = get_address_with_offsets(pm, enemy_addr, [0x6C])
+            if pm.read_bytes(alliance, 1) == b"\x06":
+                coords = (
+                    get_address_with_offsets(pm, enemy_addr, [0x190, 0x68, 0x0]) + 0x70
+                )
+                x, y, z = (
+                    pm.read_float(coords),
+                    pm.read_float(coords + 0x04),
+                    pm.read_float(coords + 0x08),
+                )
+                distance = ((player_x - x) ** 2 + (player_y - y) ** 2 + (player_z - z) ** 2) ** (1 / 2)
+                if min_distance[1] > distance:
+                    min_distance = [coords, distance]
+    print(hex(min_distance[0]), min_distance[1])
+    pm.write_bytes(player_coords, pm.read_bytes(min_distance[0], 12), 12)
 
 
 if __name__ != "__main__":
