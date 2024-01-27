@@ -1,6 +1,7 @@
 from pymem import Pymem
 import json
 from importlib import import_module
+from random import choices
 
 
 def get_worldchrman(pm: Pymem) -> int:
@@ -110,16 +111,23 @@ def p(v):  # For debug purposes, print address in nice format
         print(format(v, "X"))
 
 
-def get_random_func(i):
+def get_random_func():
     with open("resources/effects_list.json", "r") as json_file:
         data = json.load(json_file)
-    active_functions = [item for item in data if item.get("active") == 1]
+    
+    active_functions = [item for item in data if item["active"] == 1]
+    
     effect_module = import_module("effects.effects")
     effect_functions = [
         getattr(effect_module, item["name"]) for item in active_functions
     ]
+    
+    chances = [item["chance"] for item in active_functions]
+    random_effect = choices(effect_functions, chances)[0]
+    index = effect_functions.index(random_effect)
+
     return (
-        effect_functions[i],
-        active_functions[i].get("description"),
-        active_functions[i].get("sleep_time"),
+        random_effect,
+        active_functions[index]["description"],
+        active_functions[index]["sleep_time"],
     )
