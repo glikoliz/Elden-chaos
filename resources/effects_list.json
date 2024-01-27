@@ -166,5 +166,11 @@
     "description": "Teleport every enemy to player",
     "sleep_time": 0,
     "active": 1
+  },
+  {
+    "name": "TP_PLAYER_TO_NEARBY_ENEMY",
+    "description": "Teleport player to closest enemy",
+    "sleep_time": 0,
+    "active": 1
   }
 ]
