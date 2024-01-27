@@ -1,5 +1,5 @@
 import sys
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QCheckBox, QScrollArea, QPushButton, QHBoxLayout, QDialog, QLineEdit, QLabel
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QCheckBox, QScrollArea, QPushButton, QHBoxLayout, QDialog, QLineEdit, QLabel, QSpacerItem, QSizePolicy
 from PySide6.QtCore import Qt
 import json
 from functools import partial
@@ -25,7 +25,6 @@ class Effect_settings(QWidget):
         self.update_data(data_dict)
 
     def setup_ui(self, default_data):
-        print(default_data)
         layout = QVBoxLayout(self)
         layout.addWidget(self.create_labeled_edit("Description:", self.description_edit, f"Default: {default_data['description']}", ''))
         layout.addWidget(self.create_labeled_edit("Sleep Time:", self.sleep_time_edit, f"Default: {default_data['sleep_time']}", ''))
@@ -103,7 +102,6 @@ class EffectsApp(QWidget):
             effect_layout.addWidget(effect_checkbox)
             effect_button = QPushButton("Open")
             effect_button.clicked.connect(partial(self.open_new_window, effect))
-
             effect_layout.addWidget(effect_button)
             effects_layout.addLayout(effect_layout)
             self.effect_checkboxes.append(effect_checkbox)
@@ -122,6 +120,9 @@ class EffectsApp(QWidget):
         
         horizontal_layout.addWidget(save_button)
         horizontal_layout.addWidget(default_button)
+
+        spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        layout.addItem(spacer)
 
         layout.addLayout(horizontal_layout)
         
