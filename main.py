@@ -15,7 +15,7 @@ from PySide6.QtGui import QDesktopServices
 from pymem import Pymem
 import threading
 import re
-from lib.getaddress import get_random_func
+from lib.getaddress import get_random_func, get_dbg_func
 from gui.config_gui import EffectsApp
 
 pm = None
@@ -31,7 +31,8 @@ class OverlayController(QThread):
     def run(self):
         global pm
         if pm:
-            func, name, time = get_random_func(self.i)
+            func, name, time = get_dbg_func(self.i)
+            func, name, time = get_random_func()
             self.i += 1
             threading.Thread(target=func, args=(time,)).start()
             self.queue.pop(0)
