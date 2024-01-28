@@ -6,15 +6,13 @@ from random import choices
 
 def get_worldchrman(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
-        rb"\x48\x8B\x05....\x48\x85\xC0\x74\x0F\x48\x39\x88", "eldenring.exe"
-    )
+        rb"\x48\x8B\x05....\x48\x85\xC0\x74\x0F\x48\x39\x88", "eldenring.exe")
     return address + pm.read_int(address + 3) + 7
 
 
 def get_eventflagman(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
-        rb"\x48\x8B\x3D....\x48\x85\xFF..\x32\xC0\xE9", "eldenring.exe"
-    )
+        rb"\x48\x8B\x3D....\x48\x85\xFF..\x32\xC0\xE9", "eldenring.exe")
     return address + pm.read_int(address + 3) + 7
 
 
@@ -58,8 +56,7 @@ def get_cs_lua_event(pm: Pymem) -> int:
 
 def get_lua_warp(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
-        rb"\xC3......\x57\x48\x83\xEC.\x48\x8B\xFA\x44", "eldenring.exe"
-    )
+        rb"\xC3......\x57\x48\x83\xEC.\x48\x8B\xFA\x44", "eldenring.exe")
     return address + 2
 
 
@@ -71,10 +68,17 @@ def get_chr_count_and_set(pm: Pymem):
     return chr_count, chrset
 
 
+def get_dungeon_chr_count_and_set(pm: Pymem):
+    worldchrman = pm.read_longlong(get_worldchrman(pm))
+    chrset = pm.read_longlong(worldchrman + 0x1CC60)
+    chr_count = pm.read_int(chrset + 0x10)
+    chrset = pm.read_longlong(chrset + 0x18)
+    return chr_count, chrset
+
+
 def get_chr_dbg_flags(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
-        rb"\x80\x3D....\x00\x0F\x85....\x32\xC0\x48", "eldenring.exe"
-    )
+        rb"\x80\x3D....\x00\x0F\x85....\x32\xC0\x48", "eldenring.exe")
     return address + pm.read_int(address + 2) + 7
 
 
@@ -114,14 +118,14 @@ def p(v):  # For debug purposes, print address in nice format
 def get_random_func():
     with open("resources/effects_list.json", "r") as json_file:
         data = json.load(json_file)
-    
+
     active_functions = [item for item in data if item["active"] == 1]
-    
+
     effect_module = import_module("effects.effects")
     effect_functions = [
         getattr(effect_module, item["name"]) for item in active_functions
     ]
-    
+
     chances = [item["chance"] for item in active_functions]
     random_effect = choices(effect_functions, chances)[0]
     index = effect_functions.index(random_effect)
@@ -131,3 +135,15 @@ def get_random_func():
         active_functions[index]["description"],
         active_functions[index]["sleep_time"],
     )
+
+
+def get_dbg_func(i):
+    with open('resources/effects_list.json', 'r') as json_file:
+        data = json.load(json_file)
+    active_functions = [item for item in data if item['active'] == 1]
+    effect_module = import_module('effects.effects')
+    effect_functions = [
+        getattr(effect_module, item['name']) for item in active_functions
+    ]
+    return effect_functions[i], active_functions[i][
+        'description'], active_functions[i]['sleep_time']
