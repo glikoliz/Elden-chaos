@@ -9,7 +9,8 @@ from lib.getaddress import (
     get_worldchrman,
     get_address_with_offsets,
     get_chr_count_and_set,
-    get_dungeon_chr_count_and_set
+    get_dungeon_chr_count_and_set,
+    get_flask
 )
 import json
 
@@ -351,6 +352,10 @@ def TP_PLAYER_TO_NEARBY_ENEMY(sleep_time: int):
     print(hex(min_distance[0]), min_distance[1])
     pm.write_bytes(player_coords, pm.read_bytes(min_distance[0], 12), 12)
 
+def ONE_FLASK():
+    crimson_flask=get_flask(pm)
+    pm.write_bytes(crimson_flask, b'\x01', 1)
+    pass
 
 if __name__ != "__main__":
     pm = pymem.Pymem("eldenring.exe")

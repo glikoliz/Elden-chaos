@@ -104,6 +104,13 @@ def get_cs_flipper(pm: Pymem) -> int:
     )
     return address + pm.read_int(address + 3) + 7
 
+def get_flask(pm: Pymem):
+    return get_address_with_offsets(pm, pm.read_longlong(pm.base_address+0x044FF328), [0xB0, 0x80, 0xF8, 0x134])
+
+
+
+
+
 
 def p(v):  # For debug purposes, print address in nice format
     if isinstance(v, list):
