@@ -193,7 +193,7 @@
     "description": "Teleport every enemy to player",
     "sleep_time": 0,
     "active": 1,
-    "chance": 5
+    "chance": 4
   },
   {
     "name": "TP_PLAYER_TO_NEARBY_ENEMY",
