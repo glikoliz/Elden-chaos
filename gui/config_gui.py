@@ -18,7 +18,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 from functools import partial
 
-from settings_gui import Effect_settings, MessageHandler
+from gui.settings_gui import Effect_settings
+from gui.messages_gui import MessageHandler
 
 class EffectsApp(QWidget):
     def __init__(self):
