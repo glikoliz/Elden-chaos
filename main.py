@@ -12,11 +12,13 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation, QUrl
 from PySide6.QtGui import QDesktopServices
-from pymem import Pymem
 import threading
+
+from pymem import Pymem
 import re
 from lib.getaddress import get_random_func, get_dbg_func
 from gui.config_gui import EffectsApp
+from gui.messages_gui import MessageHandler
 
 pm = None
 
@@ -30,16 +32,18 @@ class OverlayController(QThread):
 
     def run(self):
         global pm
-        if pm:
-            func, name, time = get_dbg_func(self.i)
-            func, name, time = get_random_func()
-            self.i += 1
-            threading.Thread(target=func, args=(time,)).start()
-            self.queue.pop(0)
-            self.queue.append(name)
-            self.overlay.changeText(self.queue)
-        else:
-            print("Couldn't find eldenring.exe")
+        try:
+            pm=Pymem('eldenring.exe')
+        except:
+            MessageHandler.show_error_message("Couldn't find eldenring.exe")
+            return 
+        func, name, time = get_dbg_func(self.i)
+        # func, name, time = get_random_func()
+        self.i += 1
+        threading.Thread(target=func, args=(time,)).start()
+        self.queue.pop(0)
+        self.queue.append(name)
+        self.overlay.changeText(self.queue)
 
         QTimer.singleShot(0, self.overlay.start_animation)
 
