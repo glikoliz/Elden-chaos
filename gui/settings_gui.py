@@ -1,5 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel, QHBoxLayout, QMessageBox
 import json
+from gui.messages_gui import MessageHandler
+
 class Effect_settings(QWidget):
     def __init__(self, data_dict):
         super().__init__()
@@ -74,16 +76,3 @@ class Effect_settings(QWidget):
         with open("resources/effects_list.json", "w") as file:
             json.dump(current_data, file, indent=2)
         self.close()
-class MessageHandler():
-    def show_message(message):
-        msg = QMessageBox()
-        # msg.setIcon(QMessageBox.Critical)
-        msg.setText(message)
-        msg.setWindowTitle("Message")
-        msg.exec()
-    def show_error_message(error_message):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setText(error_message)
-        msg.setWindowTitle("Error")
-        msg.exec()
