@@ -11,24 +11,30 @@ from lib.getaddress import (
     get_addr_from_list,
     get_dungeon_chr_count_and_set,
     get_chr_count_and_set,
+    get_field_area
 )
 
 
 class Funcs:
 
     def disable_fast_travel() -> None:
+        fieldarea=pm.read_longlong(get_field_area(pm))+0xA0
         pm.write_bytes(
             pm.base_address + 0x61F232,
             b"\xBB\x01\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
             11,
         )
+        pm.write_int(fieldarea, 1)
 
-    def enable_fast_travel() -> None:  # TODO:can be better
+    def enable_fast_travel() -> None:
+        fieldarea=pm.read_longlong(get_field_area(pm))+0xA0
         pm.write_bytes(
             pm.base_address + 0x61F232,
-            b"\xBB\x00\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
+            b"\x90\x90\x90\x90\x90\x89\x9E\xA0\x00\x00\x00",
             11,
         )
+        pm.write_int(fieldarea, 0)
+        
 
     def warp_to(grace_id: int) -> None:
         warp_func = pm.allocate(100)

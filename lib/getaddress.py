@@ -107,6 +107,12 @@ def get_cs_flipper(pm: Pymem) -> int:
 def get_flask(pm: Pymem):
     return get_address_with_offsets(pm, pm.read_longlong(pm.base_address+0x044FF328), [0xB0, 0x80, 0xF8, 0x134])
 
+def get_field_area(pm: Pymem):
+    address = pm.pattern_scan_module(
+        rb"\x48\x8B\x0D....\x48...\x44\x0F\xB6\x61.\xE8....\x48\x63\x87....\x48...\x48\x85\xC0",
+        "eldenring.exe",
+    )
+    return address + pm.read_int(address + 3) + 7
 
 
 
