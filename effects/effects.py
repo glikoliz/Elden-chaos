@@ -322,29 +322,21 @@ def SLOW_EVERYONE(sleep_time: int):
 
 
 def TP_EVERYONE_TO_PLAYER(sleep_time: int):
-    player_coords = get_addr_from_list(pm, addr_list["CURRENT_POS"])
+    current_pos_addr=get_addr_from_list(pm, addr_list["CURRENT_POS"])
     chr_count, chrset = get_chr_count_and_set(pm)
-    player_x, player_y, player_z = (
-        pm.read_float(player_coords),
-        pm.read_float(player_coords + 0x04),
-        pm.read_float(player_coords + 0x08),
-    )
     for i in range(1, chr_count):
         enemy_addr = pm.read_longlong(chrset + i * 0x10)
         if enemy_addr:
             try:
-                alliance = get_address_with_offsets(pm, enemy_addr, [0x6C])
-                if pm.read_bytes(alliance, 1) == b"\x06":
+                if pm.read_bytes(enemy_addr+0x6C, 1) == b"\x06":
                     coords = (
                         get_address_with_offsets(pm, enemy_addr, [0x190, 0x68, 0x0])
                         + 0x70
                     )
-                    pm.write_float(coords, player_x)
-                    pm.write_float(coords + 0x04, player_y)
-                    pm.write_float(coords + 0x08, player_z)
-            except:
+                    pm.write_bytes(coords, pm.read_bytes(current_pos_addr, 12), 12)
+            except Exception as e:
+                print(e)
                 pass
-
 
 def TP_PLAYER_TO_NEARBY_ENEMY(sleep_time: int):
     player_coords=get_addr_from_list(pm, ["worldchrman", [124168, 400, 104, 112]])
