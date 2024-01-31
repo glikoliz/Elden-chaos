@@ -64,6 +64,8 @@ def get_chr_count_and_set(pm: Pymem):
     worldchrman = pm.read_longlong(get_worldchrman(pm))
     chrset = pm.read_longlong(worldchrman + 0x1E1C8)
     chr_count = pm.read_int(chrset + 0x20)
+    if(chr_count==-1):
+        return get_dungeon_chr_count_and_set(pm)
     chrset = pm.read_longlong(chrset + 0x18)
     return chr_count, chrset
 
