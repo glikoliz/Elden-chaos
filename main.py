@@ -31,14 +31,15 @@ class OverlayController(QThread):
         self.i = 0
 
     def run(self):
-        global pm
         try:
             pm=Pymem('eldenring.exe')
         except:
             MessageHandler.show_error_message("Couldn't find eldenring.exe")
             return 
-        func, name, time = get_dbg_func(self.i)
-        # func, name, time = get_random_func()
+        # func, name, time = get_dbg_func(self.i)
+        func, name, time = get_random_func()
+        while name not in self.queue:
+            func, name, time = get_random_func()
         self.i += 1
         threading.Thread(target=func, args=(time,)).start()
         self.queue.pop(0)
@@ -106,7 +107,7 @@ class Overlay(QWidget):
 
     def start_animation(self):
         self.animation_object = QPropertyAnimation(self.frame, b"geometry")
-        self.animation_object.setDuration(15000)  # ms
+        self.animation_object.setDuration(30000)  # ms
         self.animation_object.finished.connect(self.animation_finished)
         self.animation_object.setStartValue(QRect(0, 0, 0, 20))
         self.animation_object.setEndValue(
@@ -125,7 +126,7 @@ class Overlay(QWidget):
             self.overlay_controller.run()
 
 
-class MainWindow(QWidget):
+class MainWidget(QWidget):
     def __init__(self):
         super().__init__()
 
@@ -175,12 +176,11 @@ class MainAppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.widget_main = MainWindow()
+        self.widget_main = MainWidget()
         self.widget_config = EffectsApp()
+        self.widget_other = QWidget()
         self.btn_widget1 = QPushButton("Start Mod")
         self.btn_widget2 = QPushButton("Config")
-
-        self.widget_other = QWidget()
         self.btn_widget3 = QPushButton("Other")
         self.btn_widget3.clicked.connect(self.showWidget3)
         self.setupWidget3()
