@@ -37,7 +37,7 @@ class EffectsApp(QWidget):
         scroll_area.setWidgetResizable(True)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         toggle_checkbox = QCheckBox("Show/Hide effects")
-        toggle_checkbox.setChecked(False)
+        toggle_checkbox.setChecked(True)
         toggle_checkbox.stateChanged.connect(
             lambda state: self.toggle_effects(effects_widget, state, scroll_area)
         )
@@ -49,7 +49,7 @@ class EffectsApp(QWidget):
             effect_checkbox = QCheckBox(effect["description"])
             effect_checkbox.setChecked(effect["active"])
             effect_layout.addWidget(effect_checkbox)
-            effect_button = QPushButton("Open")
+            effect_button = QPushButton("Change settings")
             effect_button.clicked.connect(partial(self.open_new_window, effect))
             effect_layout.addWidget(effect_button)
             effects_layout.addLayout(effect_layout)
@@ -60,7 +60,7 @@ class EffectsApp(QWidget):
         layout.addWidget(scroll_area)
 
         horizontal_layout = QHBoxLayout()
-        scroll_area.hide()
+        # scroll_area.hide()
 
         save_button = QPushButton("Save", self)
         save_button.clicked.connect(self.save)

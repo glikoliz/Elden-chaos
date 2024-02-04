@@ -32,10 +32,10 @@ class OverlayController(QThread):
 
     def run(self):
         try:
-            pm=Pymem('eldenring.exe')
+            pm = Pymem('eldenring.exe')
         except:
             MessageHandler.show_error_message("Couldn't find eldenring.exe")
-            return 
+            return
         # func, name, time = get_dbg_func(self.i)
         func, name, time = get_random_func()
         while name not in self.queue:
@@ -80,7 +80,7 @@ class Overlay(QWidget):
         self.frame.setStyleSheet("background-color: red;")
         self.frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
         self.frame.move(0, 0)
-        self.frame.resize(self.screen().size().width(), 20)
+        self.frame.resize(self.screen().size().width(), self.screen().size().height()//50)
 
         self.label1 = QLabel("", self)
         self.label2 = QLabel("", self)
@@ -109,7 +109,7 @@ class Overlay(QWidget):
         self.animation_object = QPropertyAnimation(self.frame, b"geometry")
         self.animation_object.setDuration(30000)  # ms
         self.animation_object.finished.connect(self.animation_finished)
-        self.animation_object.setStartValue(QRect(0, 0, 0, 20))
+        self.animation_object.setStartValue(QRect(0, 0, 0, self.screen().size().height()//50))
         self.animation_object.setEndValue(
             QRect(
                 0,
@@ -133,7 +133,7 @@ class MainWidget(QWidget):
         self.overlay_controller = OverlayController(None)
         self.overlay = Overlay(self.overlay_controller)
 
-        self.button_start = QPushButton("Start mod(start the game first)", self)
+        self.button_start = QPushButton("Start mod", self)
         self.button_stop = QPushButton("Stop mod and hide overlay", self)
 
         self.label1 = QLabel("", self)
@@ -158,7 +158,8 @@ class MainWidget(QWidget):
         try:
             pm = Pymem("eldenring.exe")
         except:
-            show_error("Couldn't find eldenring.exe\nLoad to the game and then start")
+            show_error(
+                "Couldn't find eldenring.exe\nLoad to the game and then start")
             return
         if get_errors(pm) == -1:
             return
@@ -175,6 +176,7 @@ class MainWidget(QWidget):
 class MainAppWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.setGeometry(100, 100, 500, 300)
 
         self.widget_main = MainWidget()
         self.widget_config = EffectsApp()
@@ -188,8 +190,6 @@ class MainAppWindow(QMainWindow):
         self.btn_widget1.clicked.connect(self.showWidget1)
         self.btn_widget2.clicked.connect(self.showWidget2)
         self.btn_widget3.clicked.connect(self.showWidget3)
-
-        self.setGeometry(100, 100, 500, 300)
 
         widgets_layout = QVBoxLayout()
         widgets_layout.addWidget(self.widget_main)
@@ -231,10 +231,10 @@ class MainAppWindow(QMainWindow):
 
     def setupWidget3(self):
         self.layout_widget3 = QVBoxLayout(self.widget_other)
-
+        self.layout_widget3.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout_button_description = QHBoxLayout()
-
         description_label = QLabel("GitHub Repository:", self.widget_other)
+        description_label.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout_button_description.addWidget(description_label)
 
         self.btn_github = QPushButton("GitHub Repository", self.widget_other)
@@ -268,7 +268,8 @@ def get_errors(pm):  # TODO:make a checkbox to disable this function
     except:
         pass
     try:
-        current_version = pm.read_string(pm.base_address + 0x2B76F64, 9).split("#")[0]
+        current_version = pm.read_string(
+            pm.base_address + 0x2B76F64, 9).split("#")[0]
         mod_version = "1.10.1"
         if current_version != mod_version:
             show_error(
