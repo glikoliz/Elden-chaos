@@ -13,14 +13,16 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation, QUrl
 from PySide6.QtGui import QDesktopServices
 import threading
-
 from pymem import Pymem
 import re
+
 from lib.getaddress import get_random_func, get_dbg_func
 from gui.config_gui import EffectsApp
 from gui.messages_gui import MessageHandler
-
+from lib.funcs import Funcs
+from time import sleep
 pm = None
+CHAOS_TIMER_MS = 15000
 
 
 class OverlayController(QThread):
@@ -32,21 +34,32 @@ class OverlayController(QThread):
 
     def run(self):
         try:
-            pm = Pymem('eldenring.exe')
+            Pymem('eldenring.exe')
         except:
             MessageHandler.show_error_message("Couldn't find eldenring.exe")
             return
         # func, name, time = get_dbg_func(self.i)
         func, name, time = get_random_func()
-        while name not in self.queue:
+        while name in self.queue:
             func, name, time = get_random_func()
         self.i += 1
-        threading.Thread(target=func, args=(time,)).start()
+        # threading.Thread(target=func, args=(time,)).start()
         self.queue.pop(0)
         self.queue.append(name)
         self.overlay.changeText(self.queue)
-
         QTimer.singleShot(0, self.overlay.start_animation)
+        threading.Thread(target=self.update_overlay_text,
+                         args=(name, time)).start()
+
+    def update_overlay_text(self, name, time):
+        for i in range(time):
+            if (Funcs.is_player_in_cutscene()):
+                break
+            self.queue[2] = f"{name}  {time-i}s"
+            self.overlay.changeText(self.queue)
+            sleep(1)
+        self.queue[2] = name
+        self.overlay.changeText(self.queue)
 
     def stop_overlay(self):
         if self.overlay:
@@ -80,7 +93,8 @@ class Overlay(QWidget):
         self.frame.setStyleSheet("background-color: red;")
         self.frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
         self.frame.move(0, 0)
-        self.frame.resize(self.screen().size().width(), self.screen().size().height()//50)
+        self.frame.resize(self.screen().size().width(),
+                          self.screen().size().height()//50)
 
         self.label1 = QLabel("", self)
         self.label2 = QLabel("", self)
@@ -95,21 +109,22 @@ class Overlay(QWidget):
         label_width2 = self.label2.fontMetrics().horizontalAdvance(self.label2.text())
         label_width3 = self.label3.fontMetrics().horizontalAdvance(self.label3.text())
         self.label1.setGeometry(
-            screen - label_width1, self.frame.y() + 30, label_width1, 35
+            screen - label_width1, self.frame.y() + 30, label_width1, 40
         )
         self.label2.setGeometry(
-            screen - label_width2, self.label1.y() + 40, label_width2, 35
+            screen - label_width2, self.label1.y() + 40, label_width2, 40
         )
         self.label3.setGeometry(
-            screen - label_width3, self.label2.y() + 40, label_width3, 35
+            screen - label_width3, self.label2.y() + 40, label_width3, 40
         )
         self.layout.setAlignment(Qt.AlignTop | Qt.AlignRight)
 
     def start_animation(self):
         self.animation_object = QPropertyAnimation(self.frame, b"geometry")
-        self.animation_object.setDuration(30000)  # ms
+        self.animation_object.setDuration(CHAOS_TIMER_MS)
         self.animation_object.finished.connect(self.animation_finished)
-        self.animation_object.setStartValue(QRect(0, 0, 0, self.screen().size().height()//50))
+        self.animation_object.setStartValue(
+            QRect(0, 0, 0, self.screen().size().height()//50))
         self.animation_object.setEndValue(
             QRect(
                 0,
@@ -137,13 +152,6 @@ class MainWidget(QWidget):
         self.button_stop = QPushButton("Stop mod and hide overlay", self)
 
         self.label1 = QLabel("", self)
-        self.label1.setStyleSheet(
-            """
-            color: green;
-            font-weight: bold;
-            padding: 5px;
-        """
-        )
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.button_start)
@@ -154,23 +162,13 @@ class MainWidget(QWidget):
         self.button_stop.clicked.connect(self.overlay_controller.stop_overlay)
 
     def show_overlay(self):
-        global pm
-        try:
-            pm = Pymem("eldenring.exe")
-        except:
-            show_error(
-                "Couldn't find eldenring.exe\nLoad to the game and then start")
-            return
-        if get_errors(pm) == -1:
-            return
-        self.label1.setText("")
         self.overlay_controller.overlay = self.overlay
         if not self.overlay.isVisible() or self.overlay.isHidden():
+            if get_errors() == -1:
+                return
             self.overlay.showFullScreen()
             self.overlay.setHidden(False)
             self.overlay_controller.run()
-
-            # self.label1.setText("Couldn't find eldenring.exe")
 
 
 class MainAppWindow(QMainWindow):
@@ -248,22 +246,18 @@ class MainAppWindow(QMainWindow):
         QDesktopServices.openUrl(github_url)
 
 
-def show_error(error_message):
-    msg = QMessageBox()
-    msg.setIcon(QMessageBox.Critical)
-    msg.setText(error_message)
-    msg.setWindowTitle("Error")
-    msg.exec()
-    # sys.exit(app.exec())
-
-
-def get_errors(pm):  # TODO:make a checkbox to disable this function
+def get_errors():  # TODO:make a checkbox to disable this function
+    try:
+        pm=Pymem('eldenring.exe')
+    except:
+        MessageHandler.show_error_message(
+            "Couldn't find eldenring.exe\nLoad to the game and then start")
+        return -1
     try:
         import psutil
-
         for proc in psutil.process_iter():
             if proc.name() == "EasyAntiCheat_EOS.exe":
-                show_error("EAC isn't disabled")
+                MessageHandler.show_error_message("EAC isn't disabled")
                 return -1
     except:
         pass
@@ -272,7 +266,7 @@ def get_errors(pm):  # TODO:make a checkbox to disable this function
             pm.base_address + 0x2B76F64, 9).split("#")[0]
         mod_version = "1.10.1"
         if current_version != mod_version:
-            show_error(
+            MessageHandler.show_error_message(
                 f"Wrong version. Your game version is {current_version}, mod version is for {mod_version}"
             )
             return -1
