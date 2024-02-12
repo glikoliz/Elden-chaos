@@ -64,7 +64,7 @@ def get_chr_count_and_set(pm: Pymem):
     worldchrman = pm.read_longlong(get_worldchrman(pm))
     chrset = pm.read_longlong(worldchrman + 0x1E1C8)
     chr_count = pm.read_int(chrset + 0x20)
-    if(chr_count==-1):
+    if (chr_count == -1):
         return get_dungeon_chr_count_and_set(pm)
     chrset = pm.read_longlong(chrset + 0x18)
     return chr_count, chrset
@@ -77,6 +77,38 @@ def get_dungeon_chr_count_and_set(pm: Pymem):
     chrset = pm.read_longlong(chrset + 0x18)
     return chr_count, chrset
 
+def get_list_of_nearby_npcs(pm: Pymem):
+    player_coords=get_addr_from_list(pm, ["worldchrman", [124168, 400, 104, 112]])
+    player_x, player_y, player_z = (
+        pm.read_float(player_coords),
+        pm.read_float(player_coords + 0x04),
+        pm.read_float(player_coords + 0x08),
+    )
+    chr_count, chrset = get_chr_count_and_set(pm)
+    newlist=[]
+    for i in range(chr_count):
+        enemy_addr = pm.read_longlong(chrset + i * 0x10)
+        if enemy_addr:
+            if(get_distance(pm, enemy_addr, player_x, player_y, player_z)<=200):
+                newlist.append(enemy_addr)
+    chr_count, chrset = get_dungeon_chr_count_and_set(pm)
+    for i in range(chr_count):
+        enemy_addr = pm.read_longlong(chrset + i * 0x10)
+        if enemy_addr:
+            if(get_distance(pm, enemy_addr, player_x, player_y, player_z)<=200):
+                newlist.append(enemy_addr)
+    return newlist
+
+def get_distance(pm: Pymem, enemy_coords, player_x, player_y, player_z):
+    coords = (get_address_with_offsets(pm, enemy_coords, [0x190, 0x68, 0x0]) + 0x70)
+    x, y, z = (
+        pm.read_float(coords),
+        pm.read_float(coords + 0x04),
+        pm.read_float(coords + 0x08),
+    )
+    distance = ((player_x - x)**2 + (player_y - y)**2 +
+            (player_z - z)**2)**(1 / 2)
+    return distance
 
 def get_chr_dbg_flags(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
@@ -106,8 +138,10 @@ def get_cs_flipper(pm: Pymem) -> int:
     )
     return address + pm.read_int(address + 3) + 7
 
+
 def get_flask(pm: Pymem):
     return get_address_with_offsets(pm, pm.read_longlong(pm.base_address+0x044FF328), [0xB0, 0x80, 0xF8, 0x134])
+
 
 def get_field_area(pm: Pymem):
     address = pm.pattern_scan_module(
@@ -117,17 +151,16 @@ def get_field_area(pm: Pymem):
     return address + pm.read_int(address + 3) + 7
 
 
-
-
-
 def p(v):  # For debug purposes, print address in nice format
     if isinstance(v, list):
         print([format(i) for i in v])
     elif isinstance(v, dict):
         for key, value in v.items():
             print(f"{key}  {format(value,'X')}")
-    else:
+    elif isinstance(v, int):
         print(format(v, "X"))
+    else:
+        print(v)
 
 
 def get_random_func():
