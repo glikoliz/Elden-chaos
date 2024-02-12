@@ -18,7 +18,7 @@ from lib.getaddress import (
 class Funcs:
 
     def disable_fast_travel() -> None:
-        fieldarea=pm.read_longlong(get_field_area(pm))+0xA0
+        fieldarea = pm.read_longlong(get_field_area(pm))+0xA0
         pm.write_bytes(
             pm.base_address + 0x61F232,
             b"\xBB\x01\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
@@ -27,14 +27,13 @@ class Funcs:
         pm.write_int(fieldarea, 1)
 
     def enable_fast_travel() -> None:
-        fieldarea=pm.read_longlong(get_field_area(pm))+0xA0
+        fieldarea = pm.read_longlong(get_field_area(pm))+0xA0
         pm.write_bytes(
             pm.base_address + 0x61F232,
             b"\x90\x90\x90\x90\x90\x89\x9E\xA0\x00\x00\x00",
             11,
         )
         pm.write_int(fieldarea, 0)
-        
 
     def warp_to(grace_id: int) -> None:
         warp_func = pm.allocate(100)
@@ -55,11 +54,17 @@ class Funcs:
 
         pm.free(warp_func)
 
-    def wait(wait_time: int) -> None:
-        sleep(wait_time)
+    def wait(wait_time: int) -> int:
         cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
-        while pm.read_int(cutscene_on) != 0:
-            sleep(0.2)
+        for i in range(wait_time):
+            sleep(1)
+            if (pm.read_int(cutscene_on) != 0):
+                return wait_time-i
+        return -1
+
+    def is_player_in_cutscene() -> bool:
+        cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
+        return pm.read_int(cutscene_on) != 0
 
     def change_model_size(addr: int, x: float, y: float, z: float) -> None:
         pm.write_float(addr, x)

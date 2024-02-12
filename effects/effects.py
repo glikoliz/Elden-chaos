@@ -16,7 +16,6 @@ import json
 
 
 def OHKO(sleep_time: int):
-    Funcs.wait(0)  # if player in a cutscene wait until it ends
     basehp_addr = get_addr_from_list(pm, addr_list["MAX_HP"])
     basehp = pm.read_int(basehp_addr)
     pm.write_int(basehp_addr, 1)
@@ -29,7 +28,6 @@ def OHKO(sleep_time: int):
 
 
 def MANA_LEAK(sleep_time: int):
-    Funcs.wait(0)
     cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
     fp_addr = get_addr_from_list(pm, addr_list["FP"])
     fp = pm.read_int(fp_addr)
@@ -41,6 +39,7 @@ def MANA_LEAK(sleep_time: int):
 
 def WARP_TO_RANDOM_GRACE(sleep_time: int):
     random_number = int(getline("resources/graces.txt", randint(0, 305)).strip())
+    Funcs.wait(0)
     Funcs.warp_to(random_number)
 
 
@@ -64,28 +63,24 @@ def SPAWN_MALENIA(sleep_time: int):
 
 
 def DISABLE_GRAVITY(sleep_time: int):
-    Funcs.wait(0)
     pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x01", 1)
     Funcs.wait(sleep_time)
     pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x00", 1)
 
 
 def GO_REST(sleep_time: int):  # TODO:Make player invincible while he is afk
-    Funcs.wait(0)
     pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 0.0)
     Funcs.wait(sleep_time)
     pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 1.0)
 
 
 def INVINCIBILITY(sleep_time: int):
-    Funcs.wait(0)
     pm.write_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), b"\x01", 1)
     Funcs.wait(sleep_time)
     pm.write_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), b"\x00", 1)
 
 
 def INVISIBILITY(sleep_time: int):
-    Funcs.wait(0)
     chr_dbg_flags = get_chr_dbg_flags(pm)
     pm.write_bytes(chr_dbg_flags + 8, b"\x01", 1)  # hide player
     pm.write_bytes(chr_dbg_flags + 9, b"\x01", 1)  # silence player
@@ -96,7 +91,6 @@ def INVISIBILITY(sleep_time: int):
 
 
 def GHOST(sleep_time: int):
-    Funcs.wait(0)
     pm.write_int(get_addr_from_list(pm, addr_list["CHR_MODEL"]), 3)
     Funcs.wait(sleep_time)
     pm.write_int(get_addr_from_list(pm, addr_list["CHR_MODEL"]), 0)
@@ -138,21 +132,18 @@ def RANDOM_STATS(sleep_time: int):
 
 
 def SONIC_SPEED(sleep_time: int):
-    Funcs.wait(0)
     pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 3.0)
     Funcs.wait(sleep_time)
     pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 1.0)
 
 
 def SLOW_CHR(sleep_time: int):
-    Funcs.wait(0)
     pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 0.3)
     Funcs.wait(sleep_time)
     pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 1.0)
 
 
 def FULL_STAMINA(sleep_time: int):
-    Funcs.wait(0)
     chr_dbg_flags = get_chr_dbg_flags(pm)
     pm.write_bytes(chr_dbg_flags + 4, b"\x01", 1)
     Funcs.wait(sleep_time)
@@ -161,7 +152,6 @@ def FULL_STAMINA(sleep_time: int):
 
 
 def LVL1_CROOK(sleep_time: int):
-    Funcs.wait(0)
     addr = get_addr_from_list(pm, addr_list["STATS"])
     current_stats = pm.read_bytes(addr, 32)
     hp, fp = pm.read_int(get_addr_from_list(pm, addr_list["HP"])), pm.read_int(
@@ -190,7 +180,6 @@ def LVL99_BOSS(sleep_time: int):
 
 
 def DWARF_MODE(sleep_time: int):
-    Funcs.wait(0)
     Funcs.hide_cloth()
     Funcs.change_model_size(
         get_addr_from_list(pm, addr_list["CHR_SIZE"]), 0.3, 0.3, 0.3
@@ -203,7 +192,6 @@ def DWARF_MODE(sleep_time: int):
 
 
 def BIG_BOY(sleep_time: int):
-    Funcs.wait(0)
     Funcs.hide_cloth()
     Funcs.change_model_size(
         get_addr_from_list(pm, addr_list["CHR_SIZE"]), 2.0, 2.0, 2.0
@@ -216,7 +204,6 @@ def BIG_BOY(sleep_time: int):
 
 
 def RANDOM_MODEL_SIZE(sleep_time: int):
-    Funcs.wait(0)
     Funcs.hide_cloth()
     Funcs.change_model_size(
         get_addr_from_list(pm, addr_list["CHR_SIZE"]),
@@ -262,7 +249,6 @@ def HUSSEIN(sleep_time: int):
 
 
 def CYBERPUNK_EXPERIENCE(sleep_time: int):
-    Funcs.wait(0)
     collision_addr = pm.pattern_scan_module(
         b"\xC6\x83\x78\x0D\x00\x00\xFF", "eldenring.exe"
     )
@@ -360,3 +346,4 @@ if __name__ != "__main__":
             obj["addr"],
             [int(element, 16) for element in obj["offsets"].split()],
         ]
+        
