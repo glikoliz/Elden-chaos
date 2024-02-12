@@ -59,6 +59,7 @@ def GODRICK_TIME(sleep_time: int):
 
 
 def SPAWN_MALENIA(sleep_time: int):
+    Funcs.wait(0)
     Funcs.spawn_enemy(2120)
 
 
@@ -68,16 +69,18 @@ def DISABLE_GRAVITY(sleep_time: int):
     pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x00", 1)
 
 
-def GO_REST(sleep_time: int):  # TODO:Make player invincible while he is afk
+def GO_REST(sleep_time: int):
     pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 0.0)
-    Funcs.wait(sleep_time)
+    INVINCIBILITY(sleep_time)
     pm.write_float(get_addr_from_list(pm, addr_list["ANIMATION_SPEED"]), 1.0)
 
 
 def INVINCIBILITY(sleep_time: int):
-    pm.write_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), b"\x01", 1)
+    current_flags=pm.read_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), 1)[0]
+    new_flags=current_flags|0b00011
+    pm.write_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), bytes([new_flags]), 1)
     Funcs.wait(sleep_time)
-    pm.write_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), b"\x00", 1)
+    pm.write_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), bytes([current_flags]), 1)
 
 
 def INVISIBILITY(sleep_time: int):
@@ -168,7 +171,7 @@ def LVL1_CROOK(sleep_time: int):
     pm.write_int(get_addr_from_list(pm, addr_list["FP"]), fp)
 
 
-def LVL99_BOSS(sleep_time: int):
+def LVL99_BOSS(sleep_time: int): 
     addr = get_addr_from_list(pm, addr_list["STATS"])
     current_stats = pm.read_bytes(addr, 32)
     for i in range(8):
