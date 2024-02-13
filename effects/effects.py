@@ -15,6 +15,7 @@ from lib.getaddress import (
 )
 import json
 
+
 class Effect:
     def onStart(self):
         pass
@@ -24,6 +25,7 @@ class Effect:
 
     def onTick(self):
         return -1
+
 
 class OHKO(Effect):
     def onStart(self):
@@ -41,85 +43,109 @@ class OHKO(Effect):
                 pm.write_int(self.basehp_addr, self.basehp)
         except:
             pass
-        
-# class MANA_LEAK(Effect):
-#     def onStart(self):
-#         try:
-#             self.fp_addr=get_addr_from_list(pm, addr_list["FP"])
-#             self.minus_fp=pm.read_int(self.fp_addr)//20
-#         except:
-#             pass
-        
-#     def onTick(self):
-#         try:
-#             fp = pm.read_int(self.fp_addr)
-#             if fp >= self.minus_fp and not Funcs.is_player_in_cutscene():
-#                 pm.write_int(self.fp_addr, fp - self.minus_fp)
-#                 return 0
-#             else:
-#                 return -1
-#         except:
-#             return -1
-
-# def OHKO(sleep_time: int):
-#     basehp_addr = get_addr_from_list(pm, addr_list["MAX_HP"])
-#     basehp = pm.read_int(basehp_addr)
-#     pm.write_int(basehp_addr, 1)
-#     Funcs.wait(sleep_time)
-#     try:
-#         if pm.read_int(basehp_addr) == 1:
-#             pm.write_int(basehp_addr, basehp)
-#     except:
-#         pass
 
 
-# def MANA_LEAK(sleep_time: int):
-#     cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
-#     fp_addr = get_addr_from_list(pm, addr_list["FP"])
-#     fp = pm.read_int(fp_addr)
-#     while fp >= 3 and pm.read_int(cutscene_on) == 0:
-#         fp = pm.read_int(fp_addr) - 3
-#         pm.write_int(fp_addr, fp)
-#         sleep(0.5)
+class MANA_LEAK(Effect):
+    def onStart(self):
+        try:
+            self.fp_addr = get_addr_from_list(pm, addr_list["FP"])
+            self.minus_fp = pm.read_int(self.fp_addr)//20
+        except:
+            pass
+
+    def onTick(self):
+        try:
+            fp = pm.read_int(self.fp_addr)
+            if fp >= self.minus_fp and not Funcs.is_player_in_cutscene():
+                pm.write_int(self.fp_addr, fp - self.minus_fp)
+                return 0
+            else:
+                return -1
+        except:
+            return -1
+
+
 class DISABLE_GRAVITY(Effect):
     def onStart(self):
         try:
-            self.current_animation_addr=get_addr_from_list(pm, addr_list['CURRENT_ANIMATION'])
-            self.animation_addr=get_addr_from_list(pm, addr_list['ANIMATION'])
-            
-            pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x01", 1)
+            self.current_animation_addr = get_addr_from_list(
+                pm, addr_list['CURRENT_ANIMATION'])
+            self.animation_addr = get_addr_from_list(
+                pm, addr_list['ANIMATION'])
+
+            pm.write_bytes(get_addr_from_list(
+                pm, addr_list["DISABLE_GRAVITY"]), b"\x01", 1)
         except:
             pass
+
     def onTick(self):
         try:
-            if(pm.read_int(self.current_animation_addr) in [10202000, 10202040, 23033030, 23033060]):
+            if (pm.read_int(self.current_animation_addr) in [10202000, 10202040, 23033030, 23033060]):
                 pm.write_int(self.animation_addr, 0)
         except:
             pass
+
     def onStop(self):
         try:
-            pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x00", 1)
+            pm.write_bytes(get_addr_from_list(
+                pm, addr_list["DISABLE_GRAVITY"]), b"\x00", 1)
         except:
             pass
-def WARP_TO_RANDOM_GRACE(sleep_time: int):
-    random_number = int(getline("resources/graces.txt", randint(0, 305)).strip())
-    Funcs.wait(0)
-    Funcs.warp_to(random_number)
 
 
-def GODRICK_TIME(sleep_time: int):
-    godrick_addr = get_addr_from_list(pm, addr_list["GODRICK"])
-    cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
-    Funcs.respawn_boss(godrick_addr)
-    Funcs.disable_fast_travel()
-    Funcs.warp_to(18002950)
-    Funcs.wait(3)
-    while (
-        pm.read_uchar(godrick_addr) == 0 and pm.read_int(cutscene_on) == 0
-    ):  # wait until godrick(or character) dies
-        sleep(1)
-        pass
-    Funcs.enable_fast_travel()
+class WARP_TO_RANDOM_GRACE(Effect):
+    def onStart(self):
+        try:
+            random_number = int(
+                getline("resources/graces.txt", randint(0, 305)).strip())
+            Funcs.wait(0)
+            Funcs.warp_to(random_number)
+        except:
+            pass
+
+
+class GODRICK_TIME(Effect):
+    def onStart(self):
+        try:
+            self.godrick_addr = get_addr_from_list(pm, addr_list["GODRICK"])
+            self.cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
+            Funcs.respawn_boss(self.godrick_addr)
+            Funcs.disable_fast_travel()
+            Funcs.warp_to(18002950)
+            Funcs.wait(3)
+        except:
+            pass
+
+    def onTick(self):
+        # wait until godrick(or character) dies
+        if (pm.read_uchar(self.godrick_addr) == 0 and pm.read_int(self.cutscene_on) == 0):
+            return 0
+        return -1
+
+    def onStop(self):
+        Funcs.enable_fast_travel()
+
+        
+# def WARP_TO_RANDOM_GRACE(sleep_time: int):
+#     random_number = int(
+#         getline("resources/graces.txt", randint(0, 305)).strip())
+#     Funcs.wait(0)
+#     Funcs.warp_to(random_number)
+
+
+# def GODRICK_TIME(sleep_time: int):
+#     godrick_addr = get_addr_from_list(pm, addr_list["GODRICK"])
+#     cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
+#     Funcs.respawn_boss(godrick_addr)
+#     Funcs.disable_fast_travel()
+#     Funcs.warp_to(18002950)
+#     Funcs.wait(3)
+#     while (
+#         pm.read_uchar(godrick_addr) == 0 and pm.read_int(cutscene_on) == 0
+#     ):  # wait until godrick(or character) dies
+#         sleep(1)
+#         pass
+#     Funcs.enable_fast_travel()
 
 
 def SPAWN_MALENIA(sleep_time: int):
@@ -140,11 +166,14 @@ def GO_REST(sleep_time: int):
 
 
 def INVINCIBILITY(sleep_time: int):
-    current_flags=pm.read_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), 1)[0]
-    new_flags=current_flags|0b00011
-    pm.write_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), bytes([new_flags]), 1)
+    current_flags = pm.read_bytes(
+        get_addr_from_list(pm, addr_list["NO_DEAD"]), 1)[0]
+    new_flags = current_flags | 0b00011
+    pm.write_bytes(get_addr_from_list(
+        pm, addr_list["NO_DEAD"]), bytes([new_flags]), 1)
     Funcs.wait(sleep_time)
-    pm.write_bytes(get_addr_from_list(pm, addr_list["NO_DEAD"]), bytes([current_flags]), 1)
+    pm.write_bytes(get_addr_from_list(
+        pm, addr_list["NO_DEAD"]), bytes([current_flags]), 1)
 
 
 def INVISIBILITY(sleep_time: int):
@@ -172,7 +201,8 @@ def RICH_TARNISHED(sleep_time: int):
     pm.write_int(
         runes_addr,
         pm.read_int(runes_addr)
-        + (pm.read_int(get_addr_from_list(pm, addr_list["TOTAL_RUNES"])) // 10),
+        + (pm.read_int(get_addr_from_list(pm,
+           addr_list["TOTAL_RUNES"])) // 10),
     )
 
 
@@ -185,7 +215,8 @@ def CHANGE_GENDER(sleep_time: int):
 
 
 def RANDOM_STATS(sleep_time: int):
-    target_sum = pm.read_int(get_addr_from_list(pm, addr_list["CURRENT_LEVEL"]))
+    target_sum = pm.read_int(get_addr_from_list(
+        pm, addr_list["CURRENT_LEVEL"]))
     addr = get_addr_from_list(pm, addr_list["STATS"])
     if target_sum > 7:
         numbers = [randint(1, target_sum - 7) for _ in range(7)]
@@ -229,20 +260,22 @@ def LVL1_CROOK(sleep_time: int):
     # Funcs.wait(pm, address_list, 10)
     Funcs.wait(sleep_time)
     pm.write_bytes(
-        get_addr_from_list(pm, addr_list["STATS"]), current_stats, len(current_stats)
+        get_addr_from_list(
+            pm, addr_list["STATS"]), current_stats, len(current_stats)
     )
     pm.write_int(get_addr_from_list(pm, addr_list["HP"]), hp)
     pm.write_int(get_addr_from_list(pm, addr_list["FP"]), fp)
 
 
-def LVL99_BOSS(sleep_time: int): 
+def LVL99_BOSS(sleep_time: int):
     addr = get_addr_from_list(pm, addr_list["STATS"])
     current_stats = pm.read_bytes(addr, 32)
     for i in range(8):
         pm.write_int(addr + 4 * i, 99)
     Funcs.wait(sleep_time)
     pm.write_bytes(
-        get_addr_from_list(pm, addr_list["STATS"]), current_stats, len(current_stats)
+        get_addr_from_list(
+            pm, addr_list["STATS"]), current_stats, len(current_stats)
     )
 
 
@@ -332,8 +365,8 @@ def CYBERPUNK_EXPERIENCE(sleep_time: int):
 
 def SPEED_EVERYONE(sleep_time: int):
     Funcs.wait(0)
-    
-    addr_list=get_list_of_nearby_npcs(pm)
+
+    addr_list = get_list_of_nearby_npcs(pm)
     for addr in addr_list:
         try:
             speed = get_address_with_offsets(pm, addr, [0x190, 0x28, 0x17C8])
@@ -341,7 +374,7 @@ def SPEED_EVERYONE(sleep_time: int):
         except:
             pass
     Funcs.wait(sleep_time)
-    addr_list=get_list_of_nearby_npcs(pm)
+    addr_list = get_list_of_nearby_npcs(pm)
     for addr in addr_list:
         try:
             speed = get_address_with_offsets(pm, addr, [0x190, 0x28, 0x17C8])
@@ -352,7 +385,7 @@ def SPEED_EVERYONE(sleep_time: int):
 
 def SLOW_EVERYONE(sleep_time: int):
     Funcs.wait(0)
-    addr_list=get_list_of_nearby_npcs(pm)
+    addr_list = get_list_of_nearby_npcs(pm)
     for addr in addr_list:
         try:
             speed = get_address_with_offsets(pm, addr, [0x190, 0x28, 0x17C8])
@@ -360,7 +393,7 @@ def SLOW_EVERYONE(sleep_time: int):
         except:
             pass
     Funcs.wait(sleep_time)
-    addr_list=get_list_of_nearby_npcs(pm)
+    addr_list = get_list_of_nearby_npcs(pm)
     for addr in addr_list:
         try:
             speed = get_address_with_offsets(pm, addr, [0x190, 0x28, 0x17C8])
@@ -370,7 +403,7 @@ def SLOW_EVERYONE(sleep_time: int):
 
 
 def TP_EVERYONE_TO_PLAYER(sleep_time: int):
-    current_pos_addr=get_addr_from_list(pm, addr_list["CURRENT_POS"])
+    current_pos_addr = get_addr_from_list(pm, addr_list["CURRENT_POS"])
     chr_count, chrset = get_chr_count_and_set(pm)
     for i in range(1, chr_count):
         enemy_addr = pm.read_longlong(chrset + i * 0x10)
@@ -378,23 +411,29 @@ def TP_EVERYONE_TO_PLAYER(sleep_time: int):
             try:
                 if pm.read_bytes(enemy_addr+0x6C, 1) == b"\x06":
                     coords = (
-                        get_address_with_offsets(pm, enemy_addr, [0x190, 0x68, 0x0])
+                        get_address_with_offsets(
+                            pm, enemy_addr, [0x190, 0x68, 0x0])
                         + 0x70
                     )
-                    pm.write_bytes(coords, pm.read_bytes(current_pos_addr, 12), 12)
+                    pm.write_bytes(coords, pm.read_bytes(
+                        current_pos_addr, 12), 12)
             except Exception as e:
                 print(e)
                 pass
 
+
 def TP_PLAYER_TO_NEARBY_ENEMY(sleep_time: int):
-    player_coords=get_addr_from_list(pm, ["worldchrman", [124168, 400, 104, 112]])
-    min_distance=Funcs.get_closest_enemy(player_coords)
+    player_coords = get_addr_from_list(
+        pm, ["worldchrman", [124168, 400, 104, 112]])
+    min_distance = Funcs.get_closest_enemy(player_coords)
     # print(hex(min_distance[0]), min_distance[1])
     pm.write_bytes(player_coords, pm.read_bytes(min_distance[0], 12), 12)
 
+
 def ONE_FLASK():
-    crimson_flask=get_flask(pm)
+    crimson_flask = get_flask(pm)
     pm.write_bytes(crimson_flask, b'\x01', 1)
+
 
 if __name__ != "__main__":
     pm = pymem.Pymem("eldenring.exe")
@@ -407,4 +446,3 @@ if __name__ != "__main__":
             obj["addr"],
             [int(element, 16) for element in obj["offsets"].split()],
         ]
-        
