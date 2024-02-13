@@ -30,7 +30,7 @@ class OverlayController(QThread):
         super().__init__()
         self.overlay = overlay
         self.queue = ["", "", ""]
-        self.i = 0
+        self.i = 2
 
     def run(self):
         try:
@@ -54,10 +54,18 @@ class OverlayController(QThread):
         QTimer.singleShot(0, self.overlay.start_animation)
 
     def start_effect(self, effect_class, name, time, ok):
+        counter = 0
         effect = effect_class()
         effect.onStart()
+        while Funcs.is_player_in_cutscene():
+            sleep(0.5)
+        print("start")
         if time == 0:
             while effect.onTick() != -1:
+                counter += 1
+                if (counter >= 120):
+                    break
+                print("tick")
                 sleep(1)
         for i in range(time):
             effect.onTick()
@@ -66,6 +74,7 @@ class OverlayController(QThread):
             sleep(1)
         self.queue[ok-self.i] = name
         self.overlay.changeText(self.queue)
+        print("stop")
         effect.onStop()
 
     def stop_overlay(self):
