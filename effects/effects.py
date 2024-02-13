@@ -15,29 +15,92 @@ from lib.getaddress import (
 )
 import json
 
-
-def OHKO(sleep_time: int):
-    basehp_addr = get_addr_from_list(pm, addr_list["MAX_HP"])
-    basehp = pm.read_int(basehp_addr)
-    pm.write_int(basehp_addr, 1)
-    Funcs.wait(sleep_time)
-    try:
-        if pm.read_int(basehp_addr) == 1:
-            pm.write_int(basehp_addr, basehp)
-    except:
+class Effect:
+    def onStart(self):
         pass
 
+    def onStop(self):
+        pass
 
-def MANA_LEAK(sleep_time: int):
-    cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
-    fp_addr = get_addr_from_list(pm, addr_list["FP"])
-    fp = pm.read_int(fp_addr)
-    while fp >= 3 and pm.read_int(cutscene_on) == 0:
-        fp = pm.read_int(fp_addr) - 3
-        pm.write_int(fp_addr, fp)
-        sleep(0.5)
+    def onTick(self):
+        return -1
+
+class OHKO(Effect):
+    def onStart(self):
+        try:
+            self.basehp_addr = get_addr_from_list(pm, addr_list["MAX_HP"])
+            self.basehp = pm.read_int(self.basehp_addr)
+            pm.write_int(self.basehp_addr, 1)
+            return 0
+        except:
+            return -1
+
+    def onStop(self):
+        try:
+            if pm.read_int(self.basehp_addr) == 1:
+                pm.write_int(self.basehp_addr, self.basehp)
+        except:
+            pass
+        
+# class MANA_LEAK(Effect):
+#     def onStart(self):
+#         try:
+#             self.fp_addr=get_addr_from_list(pm, addr_list["FP"])
+#             self.minus_fp=pm.read_int(self.fp_addr)//20
+#         except:
+#             pass
+        
+#     def onTick(self):
+#         try:
+#             fp = pm.read_int(self.fp_addr)
+#             if fp >= self.minus_fp and not Funcs.is_player_in_cutscene():
+#                 pm.write_int(self.fp_addr, fp - self.minus_fp)
+#                 return 0
+#             else:
+#                 return -1
+#         except:
+#             return -1
+
+# def OHKO(sleep_time: int):
+#     basehp_addr = get_addr_from_list(pm, addr_list["MAX_HP"])
+#     basehp = pm.read_int(basehp_addr)
+#     pm.write_int(basehp_addr, 1)
+#     Funcs.wait(sleep_time)
+#     try:
+#         if pm.read_int(basehp_addr) == 1:
+#             pm.write_int(basehp_addr, basehp)
+#     except:
+#         pass
 
 
+# def MANA_LEAK(sleep_time: int):
+#     cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
+#     fp_addr = get_addr_from_list(pm, addr_list["FP"])
+#     fp = pm.read_int(fp_addr)
+#     while fp >= 3 and pm.read_int(cutscene_on) == 0:
+#         fp = pm.read_int(fp_addr) - 3
+#         pm.write_int(fp_addr, fp)
+#         sleep(0.5)
+class DISABLE_GRAVITY(Effect):
+    def onStart(self):
+        try:
+            self.current_animation_addr=get_addr_from_list(pm, addr_list['CURRENT_ANIMATION'])
+            self.animation_addr=get_addr_from_list(pm, addr_list['ANIMATION'])
+            
+            pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x01", 1)
+        except:
+            pass
+    def onTick(self):
+        try:
+            if(pm.read_int(self.current_animation_addr) in [10202000, 10202040, 23033030, 23033060]):
+                pm.write_int(self.animation_addr, 0)
+        except:
+            pass
+    def onStop(self):
+        try:
+            pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x00", 1)
+        except:
+            pass
 def WARP_TO_RANDOM_GRACE(sleep_time: int):
     random_number = int(getline("resources/graces.txt", randint(0, 305)).strip())
     Funcs.wait(0)
@@ -64,10 +127,10 @@ def SPAWN_MALENIA(sleep_time: int):
     Funcs.spawn_enemy(2120)
 
 
-def DISABLE_GRAVITY(sleep_time: int):
-    pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x01", 1)
-    Funcs.wait(sleep_time)
-    pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x00", 1)
+# def DISABLE_GRAVITY(sleep_time: int):
+#     pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x01", 1)
+#     Funcs.wait(sleep_time)
+#     pm.write_bytes(get_addr_from_list(pm, addr_list["DISABLE_GRAVITY"]), b"\x00", 1)
 
 
 def GO_REST(sleep_time: int):
