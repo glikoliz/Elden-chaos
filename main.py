@@ -22,7 +22,7 @@ from gui.messages_gui import MessageHandler
 from lib.funcs import Funcs
 from time import sleep
 pm = None
-CHAOS_TIMER_MS = 31000
+CHAOS_TIMER_MS = 30000
 
 
 class OverlayController(QThread):
@@ -30,8 +30,8 @@ class OverlayController(QThread):
         super().__init__()
         self.overlay = overlay
         self.queue = ["", "", ""]
-        self.i = -1
-        threading.Thread(target=self.update_something).start()
+        self.i = 0
+
     def run(self):
         try:
             Pymem('eldenring.exe')
@@ -39,36 +39,34 @@ class OverlayController(QThread):
             MessageHandler.show_error_message("Couldn't find eldenring.exe")
             return
         self.i += 1
-        # func, name, time = get_dbg_func(self.i)
-        func, name, time = get_random_func()
-        while name in self.queue:
-            func, name, time = get_random_func()
-        threading.Thread(target=func, args=(time,)).start()
+        func, name, time = get_dbg_func(self.i)
+        # func, name, time = get_random_func()
+        # while name in self.queue:
+        #     func, name, time = get_random_func()
+        threading.Thread(target=self.start_effect, args=(
+            func, name, time, self.i+2)).start()
         self.queue.pop(0)
-        if(time!=0):
+        if (time != 0):
             self.queue.append(f"{name}  {time}s")
         else:
             self.queue.append(name)
         self.overlay.changeText(self.queue)
         QTimer.singleShot(0, self.overlay.start_animation)
-        threading.Thread(target=self.update_overlay_text,
-                         args=(name, time, self.i+2)).start()
 
-    def update_something(self):
-        while True:
-            if(self.overlay):
-                self.overlay.changeText(self.queue)
+    def start_effect(self, effect_class, name, time, ok):
+        effect = effect_class()
+        effect.onStart()
+        if time == 0:
+            while effect.onTick() != -1:
                 sleep(1)
-            
-    def update_overlay_text(self, name, time, ok):
-        if time==0:
-            return
-        for i in range(1, time):
-            if Funcs.is_player_in_cutscene() or self.i==-1:
-                break
-            self.queue[ok-self.i] = f"{name}  {time-i}s"
+        for i in range(time):
+            effect.onTick()
+            self.queue[ok-self.i] = f"{name}  {time - i}s"
+            self.overlay.changeText(self.queue)
             sleep(1)
         self.queue[ok-self.i] = name
+        self.overlay.changeText(self.queue)
+        effect.onStop()
 
     def stop_overlay(self):
         if self.overlay:
@@ -255,7 +253,7 @@ class MainAppWindow(QMainWindow):
 
 def get_errors():  # TODO:make a checkbox to disable this function
     try:
-        pm=Pymem('eldenring.exe')
+        pm = Pymem('eldenring.exe')
     except:
         MessageHandler.show_error_message(
             "Couldn't find eldenring.exe\nLoad to the game and then start")
