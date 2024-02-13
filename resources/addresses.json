@@ -133,6 +133,11 @@
         "name": "ANIMATION",
         "addr": "worldchrman",
         "offsets": "10EF8 0 190 58 18"
+    },    
+    {
+        "name": "CURRENT_ANIMATION",
+        "addr": "worldchrman",
+        "offsets": "10EF8 0 58 10 190 18 40"
     },
     {
         "name": "FPS",
