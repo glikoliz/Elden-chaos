@@ -22,7 +22,7 @@ from gui.messages_gui import MessageHandler
 from lib.funcs import Funcs
 from time import sleep
 pm = None
-CHAOS_TIMER_MS = 15000
+CHAOS_TIMER_MS = 31000
 
 
 class OverlayController(QThread):
@@ -30,40 +30,49 @@ class OverlayController(QThread):
         super().__init__()
         self.overlay = overlay
         self.queue = ["", "", ""]
-        self.i = 0
-
+        self.i = -1
+        threading.Thread(target=self.update_something).start()
     def run(self):
         try:
             Pymem('eldenring.exe')
         except:
             MessageHandler.show_error_message("Couldn't find eldenring.exe")
             return
+        self.i += 1
         # func, name, time = get_dbg_func(self.i)
         func, name, time = get_random_func()
         while name in self.queue:
             func, name, time = get_random_func()
-        self.i += 1
-        # threading.Thread(target=func, args=(time,)).start()
+        threading.Thread(target=func, args=(time,)).start()
         self.queue.pop(0)
-        self.queue.append(name)
+        if(time!=0):
+            self.queue.append(f"{name}  {time}s")
+        else:
+            self.queue.append(name)
         self.overlay.changeText(self.queue)
         QTimer.singleShot(0, self.overlay.start_animation)
         threading.Thread(target=self.update_overlay_text,
-                         args=(name, time)).start()
+                         args=(name, time, self.i+2)).start()
 
-    def update_overlay_text(self, name, time):
-        for i in range(time):
-            if (Funcs.is_player_in_cutscene()):
+    def update_something(self):
+        while True:
+            if(self.overlay):
+                self.overlay.changeText(self.queue)
+                sleep(1)
+            
+    def update_overlay_text(self, name, time, ok):
+        if time==0:
+            return
+        for i in range(1, time):
+            if Funcs.is_player_in_cutscene() or self.i==-1:
                 break
-            self.queue[2] = f"{name}  {time-i}s"
-            self.overlay.changeText(self.queue)
+            self.queue[ok-self.i] = f"{name}  {time-i}s"
             sleep(1)
-        self.queue[2] = name
-        self.overlay.changeText(self.queue)
+        self.queue[ok-self.i] = name
 
     def stop_overlay(self):
         if self.overlay:
-            self.i = 0
+            self.i = -1
             self.overlay.hide()
             self.overlay.frame.resize(0, 0)
             self.overlay.animation_object.stop()
@@ -136,7 +145,6 @@ class Overlay(QWidget):
         self.animation_object.start()
 
     def animation_finished(self):
-        print("Animation finished")
         if not self.isHidden():
             self.overlay_controller.run()
 
@@ -147,7 +155,6 @@ class MainWidget(QWidget):
 
         self.overlay_controller = OverlayController(None)
         self.overlay = Overlay(self.overlay_controller)
-
         self.button_start = QPushButton("Start mod", self)
         self.button_stop = QPushButton("Stop mod and hide overlay", self)
 
