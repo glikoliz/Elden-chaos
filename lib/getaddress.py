@@ -2,7 +2,7 @@ from pymem import Pymem
 import json
 from importlib import import_module
 from random import choices
-
+import inspect
 
 def get_worldchrman(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
@@ -188,10 +188,16 @@ def get_random_func():
 def get_dbg_func(i):
     with open('resources/effects_list.json', 'r') as json_file:
         data = json.load(json_file)
-    active_functions = [item for item in data if item['active'] == 1]
+    active_classes = [item for item in data if item['active'] == 1]
+
     effect_module = import_module('effects.effects')
-    effect_functions = [
-        getattr(effect_module, item['name']) for item in active_functions
-    ]
-    return effect_functions[i], active_functions[i][
-        'description'], active_functions[i]['sleep_time']
+
+    class_objects = []
+
+    for item in active_classes:
+        class_name = item['name']
+        effect_class = getattr(effect_module, class_name, None)
+        if effect_class and inspect.isclass(effect_class):
+            class_objects.append((effect_class, item['description'], item['sleep_time']))
+    print(class_objects)
+    return class_objects[i] if i < len(class_objects) else None
