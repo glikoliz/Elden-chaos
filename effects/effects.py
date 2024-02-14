@@ -310,8 +310,9 @@ class DWARF_MODE(Effect):
 
     def onStop(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
-        Funcs.show_cloth()
+        if(self.pm.read_bytes(chr_size_addr, 12)==b'\x9A\x99\x99\x3E\x9A\x99\x99\x3E\x9A\x99\x99\x3E'):
+            Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
+            Funcs.show_cloth()
 
 
 class BIG_BOY(Effect):
@@ -322,8 +323,9 @@ class BIG_BOY(Effect):
 
     def onStop(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
-        Funcs.show_cloth()
+        if(self.pm.read_bytes(chr_size_addr, 12)==b'\x00\x00\x00\x40\x00\x00\x00\x40\x00\x00\x00\x40'):
+            Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
+            Funcs.show_cloth()
 
 
 class RANDOM_MODEL_SIZE(Effect):
@@ -339,8 +341,9 @@ class RANDOM_MODEL_SIZE(Effect):
 
     def onStop(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
-        Funcs.show_cloth()
+        if(self.pm.read_bytes(chr_size_addr, 12)!=b'\x00\x00\x80\x3F\x00\x00\x80\x3F\x00\x00\x80\x3F'):
+            Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
+            Funcs.show_cloth()
 
 
 class HUSSEIN(Effect):
@@ -420,7 +423,8 @@ class SPEED_EVERYONE(Effect):
             try:
                 speed = get_address_with_offsets(
                     self.pm, addr, [0x190, 0x28, 0x17C8])
-                self.pm.write_float(speed, 1.0)
+                if(self.pm.read_float(speed)==2.0):
+                    self.pm.write_float(speed, 1.0)
             except Exception as e:
                 logging.exception(e)
 
@@ -444,7 +448,8 @@ class SLOW_EVERYONE(Effect):
             try:
                 speed = get_address_with_offsets(
                     self.pm, addr, [0x190, 0x28, 0x17C8])
-                self.pm.write_float(speed, 1.0)
+                if(self.pm.read_float(speed)==0.3):
+                    self.pm.write_float(speed, 1.0)
             except Exception as e:
                 logging.exception(e)
 
