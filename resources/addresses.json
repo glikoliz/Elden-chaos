@@ -148,5 +148,10 @@
         "name": "USE_FPS",
         "addr": "csflipper",
         "offsets": "2D0"
+    },
+    {
+        "name": "CHR_LEVEL",
+        "addr": "gamedataman",
+        "offsets": "08 68"
     }
 ]
