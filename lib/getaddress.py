@@ -77,7 +77,7 @@ def get_dungeon_chr_count_and_set(pm: Pymem):
     chrset = pm.read_longlong(chrset + 0x18)
     return chr_count, chrset
 
-def get_list_of_nearby_npcs(pm: Pymem):
+def get_list_of_nearby_enemies(pm: Pymem):
     player_coords=get_addr_from_list(pm, ["worldchrman", [124168, 400, 104, 112]])
     player_x, player_y, player_z = (
         pm.read_float(player_coords),
@@ -89,13 +89,16 @@ def get_list_of_nearby_npcs(pm: Pymem):
     for i in range(chr_count):
         enemy_addr = pm.read_longlong(chrset + i * 0x10)
         if enemy_addr:
-            if(get_distance(pm, enemy_addr, player_x, player_y, player_z)<=200):
+            alliance=pm.read_bytes(enemy_addr+0x6C, 1)
+            if alliance in [b'\x06', b'0'] and get_distance(pm, enemy_addr, player_x, player_y, player_z)<=200:
                 newlist.append(enemy_addr)
     chr_count, chrset = get_dungeon_chr_count_and_set(pm)
     for i in range(chr_count):
         enemy_addr = pm.read_longlong(chrset + i * 0x10)
         if enemy_addr:
-            if(get_distance(pm, enemy_addr, player_x, player_y, player_z)<=200):
+            alliance=pm.read_bytes(enemy_addr+0x6C, 1)
+            
+            if alliance in [b'\x06', b'0'] and get_distance(pm, enemy_addr, player_x, player_y, player_z)<=200:
                 newlist.append(enemy_addr)
     return newlist
 
@@ -199,5 +202,4 @@ def get_dbg_func(i):
         effect_class = getattr(effect_module, class_name, None)
         if effect_class and inspect.isclass(effect_class):
             class_objects.append((effect_class, item['description'], item['sleep_time']))
-    print(class_objects)
     return class_objects[i] if i < len(class_objects) else None

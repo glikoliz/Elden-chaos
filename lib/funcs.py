@@ -76,7 +76,7 @@ class Funcs:
     def respawn_boss(self, boss_addr: int) -> None:
         self.pm.write_uchar(boss_addr, 0)
 
-    def spawn_enemy(self, id: int) -> None:  # TODO:chr_count may be broken
+    def spawn_enemy(self, id: int) -> None:
         self.pm.write_bytes(
             get_addr_from_list(self.pm, addr_list["SPAWN_NPC_X"]),
             self.pm.read_bytes(get_addr_from_list(self.pm, addr_list["CURRENT_POS"]),
@@ -176,11 +176,11 @@ class Funcs:
         return min_distance
 
     def is_lvl_okay(self):
-        lvl_addr=get_addr_from_list(self.pm, addr_list['CHR_LEVEL'])
-        attr_addr=get_addr_from_list(self.pm, addr_list['STATS'])
-        current_lvl=-79 #default level
+        lvl_addr = get_addr_from_list(self.pm, addr_list['CHR_LEVEL'])
+        attr_addr = get_addr_from_list(self.pm, addr_list['STATS'])
+        current_lvl = -79  # default level
         for i in range(8):
-            current_lvl+=self.pm.read_int(attr_addr + 4 * i)
+            current_lvl += self.pm.read_int(attr_addr + 4 * i)
         return current_lvl == self.pm.read_int(lvl_addr)
 
     def set_max_hp_fp(self):
@@ -192,6 +192,8 @@ class Funcs:
             get_addr_from_list(self.pm, addr_list['MAX_FP']))
         self.pm.write_int(hp_addr, max_hp)
         self.pm.write_int(fp_addr, max_fp)
+
+
 if __name__ != "__main__":
     with open("resources/addresses.json", "r") as file:
         json_data = json.load(file)

@@ -8,20 +8,18 @@ from PySide6.QtWidgets import (
     QLabel,
     QFrame,
     QMainWindow,
-    QMessageBox,
 )
 from PySide6.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation, QUrl
 from PySide6.QtGui import QDesktopServices
 import threading
 from pymem import Pymem
-import re
 
 from lib.getaddress import get_random_func, get_dbg_func
 from gui.config_gui import EffectsApp
 from gui.messages_gui import MessageHandler
 from lib.funcs import Funcs
 from time import sleep
-pm = None
+
 CHAOS_TIMER_MS = 30000
 
 
@@ -30,7 +28,7 @@ class OverlayController(QThread):
         super().__init__()
         self.overlay = overlay
         self.queue = ["", "", ""]
-        self.i = 2
+        self.i = -1
 
     def run(self):
         try:
@@ -57,24 +55,25 @@ class OverlayController(QThread):
         counter = 0
         effect = effect_class()
         effect.onStart()
-        while Funcs.is_player_in_cutscene():
+        funcs=Funcs()
+        while funcs.is_player_in_cutscene():
             sleep(0.5)
-        print("start")
         if time == 0:
             while effect.onTick() != -1:
                 counter += 1
                 if (counter >= 120):
                     break
-                print("tick")
                 sleep(1)
+                
         for i in range(time):
+            if funcs.is_player_in_cutscene():
+                break
             effect.onTick()
             self.queue[ok-self.i] = f"{name}  {time - i}s"
             self.overlay.changeText(self.queue)
             sleep(1)
         self.queue[ok-self.i] = name
         self.overlay.changeText(self.queue)
-        print("stop")
         effect.onStop()
 
     def stop_overlay(self):
