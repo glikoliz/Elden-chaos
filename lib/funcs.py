@@ -11,14 +11,13 @@ from lib.getaddress import (
     get_addr_from_list,
     get_dungeon_chr_count_and_set,
     get_chr_count_and_set,
-    get_field_area
-)
+    get_field_area)
 
 
 class Funcs:
     def __init__(self) -> None:
-        self.pm=Pymem('eldenring.exe')
-        
+        self.pm = Pymem('eldenring.exe')
+
     def disable_fast_travel(self) -> None:
         fieldarea = self.pm.read_longlong(get_field_area(self.pm))+0xA0
         self.pm.write_bytes(
@@ -39,7 +38,8 @@ class Funcs:
 
     def warp_to(self, grace_id: int) -> None:
         warp_func = self.pm.allocate(100)
-        cs_lua_event = get_cs_lua_event(self.pm).to_bytes(8, byteorder="little")
+        cs_lua_event = get_cs_lua_event(
+            self.pm).to_bytes(8, byteorder="little")
         lua_warp = get_lua_warp(self.pm).to_bytes(8, byteorder="little")
         bytecode = (b"\x48\x83\xEC\x48"
                     b"\x48\xB8" + cs_lua_event + b"\x48\x8B\x48\x18"
@@ -80,7 +80,7 @@ class Funcs:
         self.pm.write_bytes(
             get_addr_from_list(self.pm, addr_list["SPAWN_NPC_X"]),
             self.pm.read_bytes(get_addr_from_list(self.pm, addr_list["CURRENT_POS"]),
-                          12),
+                               12),
             12,
         )  # WRITE CURRENT POS
 
@@ -119,14 +119,17 @@ class Funcs:
         inject = b"\xE9\x45\xC0\xAC\xFE"
         code = b"\x90\x90\x90\x90\x90\xE9\xB1\x3F\x53\x01\xF3\x41\x0F\x10\x08\xE9\xA7\x3F\x53\x01"
         self.pm.write_bytes(self.pm.base_address + 0x500, code, len(code))
-        self.pm.write_bytes(self.pm.base_address + 0x15344B6, inject, len(inject))
+        self.pm.write_bytes(self.pm.base_address +
+                            0x15344B6, inject, len(inject))
         pass
 
     def show_cloth(self):
         inject = b"\xF3\x41\x0F\x10\x08"
         code = b"\x90\x90\x90\x90\x90\xE9\xB1\x3F\x53\x01\xF3\x41\x0F\x10\x08\xE9\xA7\x3F\x53\x01"
-        self.pm.write_bytes(self.pm.base_address + 0x500, b"\x00" * len(code), len(code))
-        self.pm.write_bytes(self.pm.base_address + 0x15344B6, inject, len(inject))
+        self.pm.write_bytes(self.pm.base_address + 0x500,
+                            b"\x00" * len(code), len(code))
+        self.pm.write_bytes(self.pm.base_address +
+                            0x15344B6, inject, len(inject))
 
     def get_closest_enemy(self, player_coords: int):
         chr_count, chrset = get_chr_count_and_set(self.pm)
@@ -139,7 +142,8 @@ class Funcs:
         for i in range(1, chr_count):
             enemy_addr = self.pm.read_longlong(chrset + i * 0x10)
             if enemy_addr:
-                alliance = get_address_with_offsets(self.pm, enemy_addr, [0x6C])
+                alliance = get_address_with_offsets(
+                    self.pm, enemy_addr, [0x6C])
                 if self.pm.read_bytes(alliance, 1) == b"\x06":
                     coords = (get_address_with_offsets(
                         self.pm, enemy_addr, [0x190, 0x68, 0x0]) + 0x70)
@@ -171,9 +175,24 @@ class Funcs:
                         min_distance = [coords, distance]
         return min_distance
 
+    def is_lvl_okay(self):
+        lvl_addr=get_addr_from_list(self.pm, addr_list['CHR_LEVEL'])
+        attr_addr=get_addr_from_list(self.pm, addr_list['STATS'])
+        current_lvl=-79 #default level
+        for i in range(8):
+            current_lvl+=self.pm.read_int(attr_addr + 4 * i)
+        return current_lvl == self.pm.read_int(lvl_addr)
 
+    def set_max_hp_fp(self):
+        hp_addr = get_addr_from_list(self.pm, addr_list['HP'])
+        max_hp = self.pm.read_int(
+            get_addr_from_list(self.pm, addr_list['MAX_HP']))
+        fp_addr = get_addr_from_list(self.pm, addr_list['FP'])
+        max_fp = self.pm.read_int(
+            get_addr_from_list(self.pm, addr_list['MAX_FP']))
+        self.pm.write_int(hp_addr, max_hp)
+        self.pm.write_int(fp_addr, max_fp)
 if __name__ != "__main__":
-    # pm = Pymem("eldenring.exe")
     with open("resources/addresses.json", "r") as file:
         json_data = json.load(file)
     addr_list = {}
