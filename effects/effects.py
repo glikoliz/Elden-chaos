@@ -225,19 +225,19 @@ class CHANGE_GENDER(Effect):
 
 class RANDOM_STATS(Effect):
     def onStart(self):
-        pass
-        # target_sum = self.pm.read_int(get_addr_from_list(
-        #     self.pm, addr_list["CURRENT_LEVEL"]))
-        # addr = get_addr_from_list(self.pm, addr_list["STATS"])
-        # if target_sum > 7:
-        #     numbers = [randint(1, target_sum - 7) for _ in range(7)]
-        #     numbers.append(target_sum - sum(numbers))
-        #     while any(num < 1 for num in numbers):
-        #         numbers = [randint(1, target_sum - 7) for _ in range(7)]
-        #         numbers.append(target_sum - sum(numbers))
-        #     shuffle(numbers)
-        #     for i in range(8):
-        #         self.pm.write_int(addr + 4 * i, numbers[i])
+        addr = get_addr_from_list(self.pm, addr_list["STATS"])
+        while not self.funcs.is_lvl_okay():
+            sleep(0.5)
+        self.current_stats = self.pm.read_bytes(addr, 32)
+        for i in range(8):
+            self.pm.write_int(addr + 4 * i, randint(1, 99))
+        self.funcs.set_max_hp_fp()
+        
+    def onStop(self):
+        addr = get_addr_from_list(self.pm, addr_list["STATS"])
+        if not self.funcs.is_lvl_okay():
+            self.pm.write_bytes(addr, self.current_stats, 32)
+            self.funcs.set_max_hp_fp()  
 
 
 class SONIC_SPEED(Effect):
@@ -273,6 +273,8 @@ class FULL_STAMINA(Effect):
 class LVL1_CROOK(Effect):
     def onStart(self):
         addr = get_addr_from_list(self.pm, addr_list["STATS"])
+        while not self.funcs.is_lvl_okay():
+            sleep(0.5)
         hp_addr = get_addr_from_list(self.pm, addr_list["HP"])
         fp_addr = get_addr_from_list(self.pm, addr_list["FP"])
 
@@ -285,22 +287,26 @@ class LVL1_CROOK(Effect):
         addr = get_addr_from_list(self.pm, addr_list["STATS"])
         hp_addr = get_addr_from_list(self.pm, addr_list["HP"])
         fp_addr = get_addr_from_list(self.pm, addr_list["FP"])
-
-        self.pm.write_bytes(addr, self.current_stats, 32)
-        self.pm.write_int(hp_addr, self.hp)
-        self.pm.write_int(fp_addr, self.fp)
+        if not self.funcs.is_lvl_okay():
+            self.pm.write_bytes(addr, self.current_stats, 32)
+            self.pm.write_int(hp_addr, self.hp)
+            self.pm.write_int(fp_addr, self.fp)
 
 
 class LVL99_BOSS(Effect):  # TODO: check if stats matches lvl
     def onStart(self):
         addr = get_addr_from_list(self.pm, addr_list["STATS"])
+        while not self.funcs.is_lvl_okay():
+            sleep(0.5)
         self.current_stats = self.pm.read_bytes(addr, 32)
         for i in range(8):
             self.pm.write_int(addr + 4 * i, 99)
+        self.funcs.set_max_hp_fp()
 
     def onStop(self):
         addr = get_addr_from_list(self.pm, addr_list["STATS"])
-        self.pm.write_bytes(addr, self.current_stats, 32)
+        if not self.funcs.is_lvl_okay():
+            self.pm.write_bytes(addr, self.current_stats, 32)
 
 
 class DWARF_MODE(Effect):
