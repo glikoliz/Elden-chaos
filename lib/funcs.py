@@ -16,29 +16,31 @@ from lib.getaddress import (
 
 
 class Funcs:
-
-    def disable_fast_travel() -> None:
-        fieldarea = pm.read_longlong(get_field_area(pm))+0xA0
-        pm.write_bytes(
-            pm.base_address + 0x61F232,
+    def __init__(self) -> None:
+        self.pm=Pymem('eldenring.exe')
+        
+    def disable_fast_travel(self) -> None:
+        fieldarea = self.pm.read_longlong(get_field_area(self.pm))+0xA0
+        self.pm.write_bytes(
+            self.pm.base_address + 0x61F232,
             b"\xBB\x01\x00\x00\x00\x89\x9E\xA0\x00\x00\x00",
             11,
         )
-        pm.write_int(fieldarea, 1)
+        self.pm.write_int(fieldarea, 1)
 
-    def enable_fast_travel() -> None:
-        fieldarea = pm.read_longlong(get_field_area(pm))+0xA0
-        pm.write_bytes(
-            pm.base_address + 0x61F232,
+    def enable_fast_travel(self) -> None:
+        fieldarea = self.pm.read_longlong(get_field_area(self.pm))+0xA0
+        self.pm.write_bytes(
+            self.pm.base_address + 0x61F232,
             b"\x90\x90\x90\x90\x90\x89\x9E\xA0\x00\x00\x00",
             11,
         )
-        pm.write_int(fieldarea, 0)
+        self.pm.write_int(fieldarea, 0)
 
-    def warp_to(grace_id: int) -> None:
-        warp_func = pm.allocate(100)
-        cs_lua_event = get_cs_lua_event(pm).to_bytes(8, byteorder="little")
-        lua_warp = get_lua_warp(pm).to_bytes(8, byteorder="little")
+    def warp_to(self, grace_id: int) -> None:
+        warp_func = self.pm.allocate(100)
+        cs_lua_event = get_cs_lua_event(self.pm).to_bytes(8, byteorder="little")
+        lua_warp = get_lua_warp(self.pm).to_bytes(8, byteorder="little")
         bytecode = (b"\x48\x83\xEC\x48"
                     b"\x48\xB8" + cs_lua_event + b"\x48\x8B\x48\x18"
                     b"\x48\x8B\x50\x08"
@@ -47,54 +49,54 @@ class Funcs:
                     b"\xEB\x08" + lua_warp + b"\x48\x83\xC4\x48"
                     b"\xC3")
         warp_loc = warp_func + len(bytecode)
-        # addr=pm.allocate(len(bytecode))
-        pm.write_bytes(warp_func, bytecode, len(bytecode))
-        pm.write_int(warp_loc, grace_id)
-        pm.start_thread(warp_func)
+        # addr=self.pm.allocate(len(bytecode))
+        self.pm.write_bytes(warp_func, bytecode, len(bytecode))
+        self.pm.write_int(warp_loc, grace_id)
+        self.pm.start_thread(warp_func)
 
-        pm.free(warp_func)
+        self.pm.free(warp_func)
 
-    def wait(wait_time: int) -> int:
-        cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
+    def wait(self, wait_time: int) -> int:
+        cutscene_on = get_addr_from_list(self.pm, addr_list["CUTSCENE_ON"])
         for i in range(wait_time):
             sleep(1)
-            if (pm.read_int(cutscene_on) != 0):
+            if (self.pm.read_int(cutscene_on) != 0):
                 return wait_time-i
         return -1
 
-    def is_player_in_cutscene() -> bool:
-        cutscene_on = get_addr_from_list(pm, addr_list["CUTSCENE_ON"])
-        return pm.read_int(cutscene_on) != 0
+    def is_player_in_cutscene(self) -> bool:
+        cutscene_on = get_addr_from_list(self.pm, addr_list["CUTSCENE_ON"])
+        return self.pm.read_int(cutscene_on) != 0
 
-    def change_model_size(addr: int, x: float, y: float, z: float) -> None:
-        pm.write_float(addr, x)
-        pm.write_float(addr + 4, y)
-        pm.write_float(addr + 8, z)
+    def change_model_size(self, addr: int, x: float, y: float, z: float) -> None:
+        self.pm.write_float(addr, x)
+        self.pm.write_float(addr + 4, y)
+        self.pm.write_float(addr + 8, z)
 
-    def respawn_boss(boss_addr: int) -> None:
-        pm.write_uchar(boss_addr, 0)
+    def respawn_boss(self, boss_addr: int) -> None:
+        self.pm.write_uchar(boss_addr, 0)
 
-    def spawn_enemy(id: int) -> None:  # TODO:chr_count may be broken
-        pm.write_bytes(
-            get_addr_from_list(pm, addr_list["SPAWN_NPC_X"]),
-            pm.read_bytes(get_addr_from_list(pm, addr_list["CURRENT_POS"]),
+    def spawn_enemy(self, id: int) -> None:  # TODO:chr_count may be broken
+        self.pm.write_bytes(
+            get_addr_from_list(self.pm, addr_list["SPAWN_NPC_X"]),
+            self.pm.read_bytes(get_addr_from_list(self.pm, addr_list["CURRENT_POS"]),
                           12),
             12,
         )  # WRITE CURRENT POS
 
         # WRITE CHR INFO #
         chr_id = ("c" + str(id)).encode("utf-16le")
-        chr_id_addr = get_addr_from_list(pm, addr_list["CHR_ID"])
+        chr_id_addr = get_addr_from_list(self.pm, addr_list["CHR_ID"])
 
-        pm.write_bytes(chr_id_addr, chr_id, len(chr_id))
-        pm.write_int(chr_id_addr - 0x10, id * 10000)  # NPC_PARAM_ID
-        pm.write_int(chr_id_addr - 0x0C, id * 10000)  # NPC_THINK_PARAM_ID
-        pm.write_int(chr_id_addr - 0x08, 0)  # EVENT_ENTITY_ID
-        pm.write_int(chr_id_addr - 0x04, 0)  # TALK_ID
-        pm.write_bytes(chr_id_addr + 0x78, b"\x00", 1)  # NPC_ENEMY_TYPE
+        self.pm.write_bytes(chr_id_addr, chr_id, len(chr_id))
+        self.pm.write_int(chr_id_addr - 0x10, id * 10000)  # NPC_PARAM_ID
+        self.pm.write_int(chr_id_addr - 0x0C, id * 10000)  # NPC_THINK_PARAM_ID
+        self.pm.write_int(chr_id_addr - 0x08, 0)  # EVENT_ENTITY_ID
+        self.pm.write_int(chr_id_addr - 0x04, 0)  # TALK_ID
+        self.pm.write_bytes(chr_id_addr + 0x78, b"\x00", 1)  # NPC_ENEMY_TYPE
 
-        worldchrman_addr = get_worldchrman(pm)
-        spawned_enemy = get_spawn_addr(pm, worldchrman_addr).to_bytes(
+        worldchrman_addr = get_worldchrman(self.pm)
+        spawned_enemy = get_spawn_addr(self.pm, worldchrman_addr).to_bytes(
             8, byteorder="little")
 
         assembly_code = (b"\x48\xA1" +
@@ -108,60 +110,60 @@ class Funcs:
                          b"\x88\x43\x0B"
                          b"\xFF\x05\x11\x00\x00\x00"
                          b"\xC3")
-        l = pm.allocate(100)
-        pm.write_bytes(l, assembly_code, len(assembly_code))
-        pm.start_thread(l)
-        pm.free(l)
+        l = self.pm.allocate(100)
+        self.pm.write_bytes(l, assembly_code, len(assembly_code))
+        self.pm.start_thread(l)
+        self.pm.free(l)
 
-    def hide_cloth():
+    def hide_cloth(self):
         inject = b"\xE9\x45\xC0\xAC\xFE"
         code = b"\x90\x90\x90\x90\x90\xE9\xB1\x3F\x53\x01\xF3\x41\x0F\x10\x08\xE9\xA7\x3F\x53\x01"
-        pm.write_bytes(pm.base_address + 0x500, code, len(code))
-        pm.write_bytes(pm.base_address + 0x15344B6, inject, len(inject))
+        self.pm.write_bytes(self.pm.base_address + 0x500, code, len(code))
+        self.pm.write_bytes(self.pm.base_address + 0x15344B6, inject, len(inject))
         pass
 
-    def show_cloth():
+    def show_cloth(self):
         inject = b"\xF3\x41\x0F\x10\x08"
         code = b"\x90\x90\x90\x90\x90\xE9\xB1\x3F\x53\x01\xF3\x41\x0F\x10\x08\xE9\xA7\x3F\x53\x01"
-        pm.write_bytes(pm.base_address + 0x500, b"\x00" * len(code), len(code))
-        pm.write_bytes(pm.base_address + 0x15344B6, inject, len(inject))
+        self.pm.write_bytes(self.pm.base_address + 0x500, b"\x00" * len(code), len(code))
+        self.pm.write_bytes(self.pm.base_address + 0x15344B6, inject, len(inject))
 
-    def get_closest_enemy(player_coords: int):
-        chr_count, chrset = get_chr_count_and_set(pm)
+    def get_closest_enemy(self, player_coords: int):
+        chr_count, chrset = get_chr_count_and_set(self.pm)
         min_distance = [-1, 10000]  # addr, distance
         player_x, player_y, player_z = (
-            pm.read_float(player_coords),
-            pm.read_float(player_coords + 0x04),
-            pm.read_float(player_coords + 0x08),
+            self.pm.read_float(player_coords),
+            self.pm.read_float(player_coords + 0x04),
+            self.pm.read_float(player_coords + 0x08),
         )
         for i in range(1, chr_count):
-            enemy_addr = pm.read_longlong(chrset + i * 0x10)
+            enemy_addr = self.pm.read_longlong(chrset + i * 0x10)
             if enemy_addr:
-                alliance = get_address_with_offsets(pm, enemy_addr, [0x6C])
-                if pm.read_bytes(alliance, 1) == b"\x06":
+                alliance = get_address_with_offsets(self.pm, enemy_addr, [0x6C])
+                if self.pm.read_bytes(alliance, 1) == b"\x06":
                     coords = (get_address_with_offsets(
-                        pm, enemy_addr, [0x190, 0x68, 0x0]) + 0x70)
+                        self.pm, enemy_addr, [0x190, 0x68, 0x0]) + 0x70)
                     x, y, z = (
-                        pm.read_float(coords),
-                        pm.read_float(coords + 0x04),
-                        pm.read_float(coords + 0x08),
+                        self.pm.read_float(coords),
+                        self.pm.read_float(coords + 0x04),
+                        self.pm.read_float(coords + 0x08),
                     )
                     distance = ((player_x - x)**2 + (player_y - y)**2 +
                                 (player_z - z)**2)**(1 / 2)
                     if min_distance[1] > distance:
                         min_distance = [coords, distance]
-        dungeon_count, dungeon_chrset = get_dungeon_chr_count_and_set(pm)
+        dungeon_count, dungeon_chrset = get_dungeon_chr_count_and_set(self.pm)
         for i in range(1, dungeon_count):
-            enemyins = pm.read_longlong(dungeon_chrset + i * 0x10)
+            enemyins = self.pm.read_longlong(dungeon_chrset + i * 0x10)
             if enemyins:
-                alliance = get_address_with_offsets(pm, enemyins, [0x6C])
-                if pm.read_bytes(alliance, 1) == b"\x06":
+                alliance = get_address_with_offsets(self.pm, enemyins, [0x6C])
+                if self.pm.read_bytes(alliance, 1) == b"\x06":
                     coords = (get_address_with_offsets(
-                        pm, enemyins, [0x190, 0x68, 0x0]) + 0x70)
+                        self.pm, enemyins, [0x190, 0x68, 0x0]) + 0x70)
                     x, y, z = (
-                        pm.read_float(coords),
-                        pm.read_float(coords + 0x04),
-                        pm.read_float(coords + 0x08),
+                        self.pm.read_float(coords),
+                        self.pm.read_float(coords + 0x04),
+                        self.pm.read_float(coords + 0x08),
                     )
                     distance = ((player_x - x)**2 + (player_y - y)**2 +
                                 (player_z - z)**2)**(1 / 2)
@@ -171,7 +173,7 @@ class Funcs:
 
 
 if __name__ != "__main__":
-    pm = Pymem("eldenring.exe")
+    # pm = Pymem("eldenring.exe")
     with open("resources/addresses.json", "r") as file:
         json_data = json.load(file)
     addr_list = {}
