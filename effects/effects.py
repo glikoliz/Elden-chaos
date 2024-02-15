@@ -27,6 +27,7 @@ logging.basicConfig(
 class Effect:
     def __init__(self) -> None:
         self.pm = pymem.Pymem("eldenring.exe")
+        self.funcs = Funcs()
 
     def onStart(self):
         pass
@@ -67,7 +68,7 @@ class MANA_LEAK(Effect):
     def onTick(self):
         try:
             fp = self.pm.read_int(self.fp_addr)
-            if fp >= self.minus_fp and not Funcs.is_player_in_cutscene():
+            if fp >= self.minus_fp and not self.funcs.is_player_in_cutscene():
                 self.pm.write_int(self.fp_addr, fp - self.minus_fp)
                 return 0
             else:
@@ -116,8 +117,8 @@ class WARP_TO_RANDOM_GRACE(Effect):
         try:
             random_number = int(
                 getline("resources/graces.txt", randint(0, 305)).strip())
-            Funcs.wait(0)
-            Funcs.warp_to(random_number)
+            self.funcs.wait(0)
+            self.funcs.warp_to(random_number)
         except:
             pass
 
@@ -129,10 +130,10 @@ class GODRICK_TIME(Effect):
                                                    addr_list["GODRICK"])
             self.cutscene_on = get_addr_from_list(self.pm,
                                                   addr_list["CUTSCENE_ON"])
-            Funcs.respawn_boss(self.godrick_addr)
-            Funcs.disable_fast_travel()
-            Funcs.warp_to(18002950)
-            Funcs.wait(3)
+            self.funcs.respawn_boss(self.godrick_addr)
+            self.funcs.disable_fast_travel()
+            self.funcs.warp_to(18002950)
+            self.funcs.wait(3)
         except Exception as e:
             logging.exception(e)
 
@@ -143,12 +144,12 @@ class GODRICK_TIME(Effect):
         return -1
 
     def onStop(self):
-        Funcs.enable_fast_travel()
+        self.funcs.enable_fast_travel()
 
 
 class SPAWN_MALENIA(Effect):
     def onStart(self):
-        Funcs.spawn_enemy(2120)
+        self.funcs.spawn_enemy(2120)
 
 
 class GO_REST(Effect):
@@ -290,7 +291,7 @@ class LVL1_CROOK(Effect):
         self.pm.write_int(fp_addr, self.fp)
 
 
-class LVL99_BOSS(Effect):
+class LVL99_BOSS(Effect):  # TODO: check if stats matches lvl
     def onStart(self):
         addr = get_addr_from_list(self.pm, addr_list["STATS"])
         self.current_stats = self.pm.read_bytes(addr, 32)
@@ -305,34 +306,34 @@ class LVL99_BOSS(Effect):
 class DWARF_MODE(Effect):
     def onStart(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        Funcs.hide_cloth()
-        Funcs.change_model_size(chr_size_addr, 0.3, 0.3, 0.3)
+        self.funcs.hide_cloth()
+        self.funcs.change_model_size(chr_size_addr, 0.3, 0.3, 0.3)
 
     def onStop(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        if(self.pm.read_bytes(chr_size_addr, 12)==b'\x9A\x99\x99\x3E\x9A\x99\x99\x3E\x9A\x99\x99\x3E'):
-            Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
-            Funcs.show_cloth()
+        if (self.pm.read_bytes(chr_size_addr, 12) == b'\x9A\x99\x99\x3E\x9A\x99\x99\x3E\x9A\x99\x99\x3E'):
+            self.funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
+            self.funcs.show_cloth()
 
 
 class BIG_BOY(Effect):
     def onStart(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        Funcs.hide_cloth()
-        Funcs.change_model_size(chr_size_addr, 2.0, 2.0, 2.0)
+        self.funcs.hide_cloth()
+        self.funcs.change_model_size(chr_size_addr, 2.0, 2.0, 2.0)
 
     def onStop(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        if(self.pm.read_bytes(chr_size_addr, 12)==b'\x00\x00\x00\x40\x00\x00\x00\x40\x00\x00\x00\x40'):
-            Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
-            Funcs.show_cloth()
+        if (self.pm.read_bytes(chr_size_addr, 12) == b'\x00\x00\x00\x40\x00\x00\x00\x40\x00\x00\x00\x40'):
+            self.funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
+            self.funcs.show_cloth()
 
 
 class RANDOM_MODEL_SIZE(Effect):
     def onStart(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        Funcs.hide_cloth()
-        Funcs.change_model_size(
+        self.funcs.hide_cloth()
+        self.funcs.change_model_size(
             chr_size_addr,
             uniform(0.1, 2.5),
             uniform(0.1, 2.5),
@@ -341,9 +342,9 @@ class RANDOM_MODEL_SIZE(Effect):
 
     def onStop(self):
         chr_size_addr = get_addr_from_list(self.pm, addr_list["CHR_SIZE"])
-        if(self.pm.read_bytes(chr_size_addr, 12)!=b'\x00\x00\x80\x3F\x00\x00\x80\x3F\x00\x00\x80\x3F'):
-            Funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
-            Funcs.show_cloth()
+        if (self.pm.read_bytes(chr_size_addr, 12) != b'\x00\x00\x80\x3F\x00\x00\x80\x3F\x00\x00\x80\x3F'):
+            self.funcs.change_model_size(chr_size_addr, 1.0, 1.0, 1.0)
+            self.funcs.show_cloth()
 
 
 class HUSSEIN(Effect):
@@ -406,7 +407,7 @@ class CYBERPUNK_EXPERIENCE(Effect):
 
 class SPEED_EVERYONE(Effect):
     def onStart(self):
-        Funcs.wait(0)
+        self.funcs.wait(0)
         addr_list = get_list_of_nearby_npcs(self.pm)
         for addr in addr_list:
             try:
@@ -417,13 +418,13 @@ class SPEED_EVERYONE(Effect):
                 logging.exception(e)
 
     def onStop(self):
-        Funcs.wait(0)
+        self.funcs.wait(0)
         addr_list = get_list_of_nearby_npcs(self.pm)
         for addr in addr_list:
             try:
                 speed = get_address_with_offsets(
                     self.pm, addr, [0x190, 0x28, 0x17C8])
-                if(self.pm.read_float(speed)==2.0):
+                if (self.pm.read_float(speed) == 2.0):
                     self.pm.write_float(speed, 1.0)
             except Exception as e:
                 logging.exception(e)
@@ -431,7 +432,7 @@ class SPEED_EVERYONE(Effect):
 
 class SLOW_EVERYONE(Effect):
     def onStart(self):
-        Funcs.wait(0)
+        self.funcs.wait(0)
         addr_list = get_list_of_nearby_npcs(self.pm)
         for addr in addr_list:
             try:
@@ -442,13 +443,13 @@ class SLOW_EVERYONE(Effect):
                 logging.exception(e)
 
     def onStop(self):
-        Funcs.wait(0)
+        self.funcs.wait(0)
         addr_list = get_list_of_nearby_npcs(self.pm)
         for addr in addr_list:
             try:
                 speed = get_address_with_offsets(
                     self.pm, addr, [0x190, 0x28, 0x17C8])
-                if(self.pm.read_float(speed)==0.3):
+                if (self.pm.read_float(speed) == 0.3):
                     self.pm.write_float(speed, 1.0)
             except Exception as e:
                 logging.exception(e)
@@ -456,7 +457,8 @@ class SLOW_EVERYONE(Effect):
 
 class TP_EVERYONE_TO_PLAYER(Effect):
     def onStart(self):
-        current_pos_addr = get_addr_from_list(self.pm, addr_list["CURRENT_POS"])
+        current_pos_addr = get_addr_from_list(
+            self.pm, addr_list["CURRENT_POS"])
         chr_count, chrset = get_chr_count_and_set(self.pm)
         for i in range(1, chr_count):
             enemy_addr = self.pm.read_longlong(chrset + i * 0x10)
@@ -472,13 +474,16 @@ class TP_EVERYONE_TO_PLAYER(Effect):
                             current_pos_addr, 12), 12)
                 except Exception as e:
                     logging.exception(e)
-            
+
+
 class TP_PLAYER_TO_NEARBY_ENEMY(Effect):
     def onStart(self):
         player_coords = get_addr_from_list(
             self.pm, ["worldchrman", [124168, 400, 104, 112]])
-        min_distance = Funcs.get_closest_enemy(player_coords)
-        self.pm.write_bytes(player_coords, self.pm.read_bytes(min_distance[0], 12), 12)
+        min_distance = self.funcs.get_closest_enemy(player_coords)
+        self.pm.write_bytes(
+            player_coords, self.pm.read_bytes(min_distance[0], 12), 12)
+
 
 class ONE_FLASK(Effect):
     def onStart(self):
