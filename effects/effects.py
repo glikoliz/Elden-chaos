@@ -1,34 +1,33 @@
 import pymem
 from time import sleep
-from random import randint, shuffle, uniform
+from random import randint, uniform
 from linecache import getline
 from lib.funcs import Funcs
 from lib.getaddress import (
     get_addr_from_list,
     get_chr_dbg_flags,
-    get_worldchrman,
     get_address_with_offsets,
     get_chr_count_and_set,
-    get_dungeon_chr_count_and_set,
     get_flask,
-    get_list_of_nearby_npcs,
+    get_list_of_nearby_enemies,
 )
 import json
 import logging
 
+logging.getLogger('pymem').setLevel(logging.WARNING)
 logging.basicConfig(
     filename="logfile.log",
     level=logging.ERROR,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    encoding="utf-8",
+    format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
 
 class Effect:
     def __init__(self) -> None:
-        self.pm = pymem.Pymem("eldenring.exe")
-        self.funcs = Funcs()
-
+        try:
+            self.pm = pymem.Pymem("eldenring.exe")
+            self.funcs = Funcs()
+        except Exception as e:
+            logging.exception(e)
     def onStart(self):
         pass
 
@@ -293,7 +292,7 @@ class LVL1_CROOK(Effect):
             self.pm.write_int(fp_addr, self.fp)
 
 
-class LVL99_BOSS(Effect):  # TODO: check if stats matches lvl
+class LVL99_BOSS(Effect):
     def onStart(self):
         addr = get_addr_from_list(self.pm, addr_list["STATS"])
         while not self.funcs.is_lvl_okay():
@@ -414,7 +413,7 @@ class CYBERPUNK_EXPERIENCE(Effect):
 class SPEED_EVERYONE(Effect):
     def onStart(self):
         self.funcs.wait(0)
-        addr_list = get_list_of_nearby_npcs(self.pm)
+        addr_list = get_list_of_nearby_enemies(self.pm)
         for addr in addr_list:
             try:
                 speed = get_address_with_offsets(
@@ -425,12 +424,13 @@ class SPEED_EVERYONE(Effect):
 
     def onStop(self):
         self.funcs.wait(0)
-        addr_list = get_list_of_nearby_npcs(self.pm)
+        addr_list = get_list_of_nearby_enemies(self.pm)
         for addr in addr_list:
             try:
                 speed = get_address_with_offsets(
                     self.pm, addr, [0x190, 0x28, 0x17C8])
-                if (self.pm.read_float(speed) == 2.0):
+                current_speed=self.pm.read_float(speed)
+                if (current_speed >= 1.9 and current_speed <=2.1):
                     self.pm.write_float(speed, 1.0)
             except Exception as e:
                 logging.exception(e)
@@ -439,7 +439,7 @@ class SPEED_EVERYONE(Effect):
 class SLOW_EVERYONE(Effect):
     def onStart(self):
         self.funcs.wait(0)
-        addr_list = get_list_of_nearby_npcs(self.pm)
+        addr_list = get_list_of_nearby_enemies(self.pm)
         for addr in addr_list:
             try:
                 speed = get_address_with_offsets(
@@ -450,12 +450,13 @@ class SLOW_EVERYONE(Effect):
 
     def onStop(self):
         self.funcs.wait(0)
-        addr_list = get_list_of_nearby_npcs(self.pm)
+        addr_list = get_list_of_nearby_enemies(self.pm)
         for addr in addr_list:
             try:
                 speed = get_address_with_offsets(
                     self.pm, addr, [0x190, 0x28, 0x17C8])
-                if (self.pm.read_float(speed) == 0.3):
+                current_speed=self.pm.read_float(speed)
+                if (current_speed >= 0.2 and current_speed<=0.4):
                     self.pm.write_float(speed, 1.0)
             except Exception as e:
                 logging.exception(e)
@@ -491,7 +492,7 @@ class TP_PLAYER_TO_NEARBY_ENEMY(Effect):
             player_coords, self.pm.read_bytes(min_distance[0], 12), 12)
 
 
-class ONE_FLASK(Effect):
+class ONE_FLASK(Effect): #TODO: doesn't work for some reason
     def onStart(self):
         crimson_flask = get_flask(self.pm)
         self.pm.write_bytes(crimson_flask, b'\x01', 1)
