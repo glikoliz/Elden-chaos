@@ -172,11 +172,18 @@ def get_random_func():
 
     active_functions = [item for item in data if item["active"] == 1]
 
-    effect_module = import_module("effects.effects")
-    effect_functions = [
-        getattr(effect_module, item["name"]) for item in active_functions
-    ]
+    active_classes = [item for item in data if item['active'] == 1]
 
+    effect_module = import_module('effects.effects')
+
+    effect_functions = []
+
+    for item in active_classes:
+        class_name = item['name']
+        effect_class = getattr(effect_module, class_name, None)
+        if effect_class and inspect.isclass(effect_class):
+            effect_functions.append(effect_class)
+            
     chances = [item["chance"] for item in active_functions]
     random_effect = choices(effect_functions, chances)[0]
     index = effect_functions.index(random_effect)
