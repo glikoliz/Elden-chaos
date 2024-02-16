@@ -60,7 +60,7 @@ class MANA_LEAK(Effect):
     def onStart(self):
         try:
             self.fp_addr = get_addr_from_list(self.pm, addr_list["FP"])
-            self.minus_fp = self.pm.read_int(self.fp_addr) // 20
+            self.minus_fp = self.pm.read_int(self.fp_addr) // 30
         except Exception as e:
             logging.exception(e)
 
@@ -271,25 +271,33 @@ class FULL_STAMINA(Effect):
 
 class LVL1_CROOK(Effect):
     def onStart(self):
-        addr = get_addr_from_list(self.pm, addr_list["STATS"])
-        while not self.funcs.is_lvl_okay():
-            sleep(0.5)
-        hp_addr = get_addr_from_list(self.pm, addr_list["HP"])
-        fp_addr = get_addr_from_list(self.pm, addr_list["FP"])
+        try:
+            self.funcs.wait(0)
+            addr = get_addr_from_list(self.pm, addr_list["STATS"])
+            while not self.funcs.is_lvl_okay():
+                sleep(0.5)
+            hp_addr = get_addr_from_list(self.pm, addr_list["HP"])
+            fp_addr = get_addr_from_list(self.pm, addr_list["FP"])
 
-        self.current_stats = self.pm.read_bytes(addr, 32)
-        self.hp, self.fp = self.pm.read_int(hp_addr), self.pm.read_int(fp_addr)
-        for i in range(8):
-            self.pm.write_int(addr + 4 * i, 1)
+            self.current_stats = self.pm.read_bytes(addr, 32)
+            self.hp, self.fp = self.pm.read_int(hp_addr), self.pm.read_int(fp_addr)
+            for i in range(8):
+                self.pm.write_int(addr + 4 * i, 1)
+        except Exception as e:
+            logging.exception(e)
 
     def onStop(self):
-        addr = get_addr_from_list(self.pm, addr_list["STATS"])
-        hp_addr = get_addr_from_list(self.pm, addr_list["HP"])
-        fp_addr = get_addr_from_list(self.pm, addr_list["FP"])
-        if not self.funcs.is_lvl_okay():
-            self.pm.write_bytes(addr, self.current_stats, 32)
-            self.pm.write_int(hp_addr, self.hp)
-            self.pm.write_int(fp_addr, self.fp)
+        try:
+            self.funcs.wait(0)
+            addr = get_addr_from_list(self.pm, addr_list["STATS"])
+            hp_addr = get_addr_from_list(self.pm, addr_list["HP"])
+            fp_addr = get_addr_from_list(self.pm, addr_list["FP"])
+            if not self.funcs.is_lvl_okay():
+                self.pm.write_bytes(addr, self.current_stats, 32)
+                self.pm.write_int(hp_addr, self.hp)
+                self.pm.write_int(fp_addr, self.fp)
+        except Exception as e:
+            logging.exception(e)
 
 
 class LVL99_BOSS(Effect):
