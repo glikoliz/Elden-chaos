@@ -174,7 +174,7 @@ class INVINCIBILITY(Effect):
 
     def onStop(self):
         self.pm.write_bytes(get_addr_from_list(self.pm, addr_list["NO_DEAD"]),
-                            bytes([self.old_flags]), 1)
+                            bytes([self.old_flags&0b11100]), 1)
 
 
 class INVISIBILITY(Effect):
@@ -245,8 +245,11 @@ class SONIC_SPEED(Effect):
             self.pm, addr_list["ANIMATION_SPEED"]), 3.0)
 
     def onStop(self):
-        self.pm.write_float(get_addr_from_list(
-            self.pm, addr_list["ANIMATION_SPEED"]), 1.0)
+        if(self.pm.read_float(get_addr_from_list(self.pm, addr_list["ANIMATION_SPEED"]))==3.0):
+            self.pm.write_float(get_addr_from_list(
+                self.pm, addr_list["ANIMATION_SPEED"]), 1.0)
+        else:
+            logging.exception("Speed was changed in another function")
 
 
 class SLOW_CHR(Effect):
@@ -255,8 +258,9 @@ class SLOW_CHR(Effect):
             self.pm, addr_list["ANIMATION_SPEED"]), 0.3)
 
     def onStop(self):
-        self.pm.write_float(get_addr_from_list(
-            self.pm, addr_list["ANIMATION_SPEED"]), 1.0)
+        if(self.pm.read_float(get_addr_from_list(self.pm, addr_list["ANIMATION_SPEED"]))==0.3):
+            self.pm.write_float(get_addr_from_list(
+                self.pm, addr_list["ANIMATION_SPEED"]), 1.0)
 
 
 class FULL_STAMINA(Effect):
