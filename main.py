@@ -44,10 +44,11 @@ class OverlayController(QThread):
             MessageHandler.show_error_message("Couldn't find eldenring.exe")
             return
         self.i += 1
-        # effect_class, effect_name, effect_time = get_dbg_func(self.i)
-        effect_class, effect_name, effect_time = get_random_func()
-        while effect_name in self.queue:
-            effect_class, effect_name, effect_time = get_random_func()
+        effect_class, effect_name, effect_time = get_dbg_func(self.i)
+        # effect_class, effect_name, effect_time = get_random_func()
+        # while effect_name in self.queue:
+        #     effect_class, effect_name, effect_time = get_random_func()
+            
         Thread(target=self.start_effect, args=(
             effect_class, effect_name, effect_time, self.i+2)).start()
         self.queue.pop(0)
@@ -60,14 +61,13 @@ class OverlayController(QThread):
         QTimer.singleShot(0, self.overlay.start_animation)
 
     def start_effect(self, effect_class, effect_name, effect_time, ok):
+        funcs = Funcs()
+        while funcs.is_player_in_cutscene():
+            sleep(0.5)
         counter = 0
         effect = effect_class()
         effect.onStart()
-        funcs = Funcs()
-        self.overlay.test(self.queue)
-        
-        while funcs.is_player_in_cutscene():
-            sleep(0.5)
+        self.overlay.change_text(self.queue)
         if effect_time == 0:
             while effect.onTick() != -1:
                 counter += 1
@@ -79,10 +79,13 @@ class OverlayController(QThread):
             i = time()-start
             while i < effect_time:
                 if funcs.is_player_in_cutscene():
-                    break
+                    while funcs.is_player_in_cutscene():
+                        sleep(0.5)
+                    start=time()-i
+                    pass
                 effect.onTick()
                 self.updateSignal.emit(self.queue, 100-(i/effect_time)*100, ok-self.i)
-                sleep(1)
+                sleep(0.5)
                 i = time()-start
         
         self.updateSignal.emit(self.queue, 0, ok-self.i)
@@ -151,45 +154,32 @@ class Overlay(QWidget):
         self.scene.setBackgroundBrush(Qt.transparent)
 
         # self.worker = Worker()
-        self.overlay_controller.updateSignal.connect(self.changeText)
+        self.overlay_controller.updateSignal.connect(self.set_rectangles)
 
     @Slot(list, int, int)
-    def changeText(self, que, value, i):
+    def set_rectangles(self, queue, value, i):
         screen = self.screen().size().width()
-
         label_height = self.labels[0].fontMetrics().height()
         rect_width = 70
-
         fill_width = (value/100)*70
         gray_width = rect_width - fill_width
-        if gray_width == rect_width:
+
+        if value == 0:
             self.rects[i].setRect(0, 0, 0, 0)
             self.gray_rects[i].setRect(0, 0, 0, 0)
-            self.labels[i].setGeometry(
-                screen - self.labels[i].fontMetrics().horizontalAdvance(self.labels[i].text()) -
-                20, self.screen().size().height()//50, self.labels[i].fontMetrics().horizontalAdvance(self.labels[i].text()), label_height)
         else:
             self.rects[i].setRect(
-                screen - rect_width - 10, (i)*40 + self.screen().size().height()//50 + 5, fill_width, label_height - 5)
+                screen - rect_width - 10, i*40 + self.screen().size().height()//50 + 5, fill_width, label_height - 5)
             self.gray_rects[i].setBrush(QBrush(QColor("gray")))
             self.gray_rects[i].setPen(QPen(Qt.NoPen))
             self.gray_rects[i].setRect(self.rects[i].rect().x(
             )+fill_width, self.rects[i].rect().y(), gray_width, self.rects[i].rect().height())
 
-    def test(self, queue):
+    def change_text(self, queue):
         screen=self.screen().size().width()
-        self.labels[0].setText(queue[0])
-        self.labels[1].setText(queue[1])
-        self.labels[2].setText(queue[2])
-        for k in range(3):
-            if self.labels[k].x() == screen - self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()) - 70 - 20:
-                self.labels[k].setGeometry(screen - self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()) - 70 -
-                        20, self.screen().size().height()//50 + 40*k, self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()), 40)
-            elif self.labels[k].x() == screen - self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()) - 20:
-                self.labels[k].setGeometry(screen - self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()) -
-                        20, self.screen().size().height()//50 + 40*k, self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()), 40)
-            else:
-                self.labels[k].setGeometry(screen - self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()) - 70 -
+        for k in range(len(queue)):
+            self.labels[k].setText(queue[k])
+            self.labels[k].setGeometry(screen - self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()) - 70 -
                         20, self.screen().size().height()//50 + 40*k, self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()), 40)
                 
     def start_animation(self):
