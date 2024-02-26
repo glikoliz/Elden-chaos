@@ -153,5 +153,10 @@
         "name": "CHR_LEVEL",
         "addr": "gamedataman",
         "offsets": "08 68"
+    },
+    {
+        "name": "WEAPON_RIGHT_HAND",
+        "addr": "gamedataman",
+        "offsets": "08 3A0"
     }
 ]
