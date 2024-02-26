@@ -2,7 +2,7 @@
   {
     "name": "OHKO",
     "description": "OHKO",
-    "sleep_time": 10,
+    "sleep_time": 30,
     "active": 1,
     "chance": 5
   },
@@ -25,7 +25,7 @@
     "description": "Godrick Time",
     "sleep_time": 0,
     "active": 1,
-    "chance": 2
+    "chance": 3
   },
   {
     "name": "SPAWN_MALENIA",
@@ -37,7 +37,7 @@
   {
     "name": "DISABLE_GRAVITY",
     "description": "Disable Gravity",
-    "sleep_time": 10,
+    "sleep_time": 30,
     "active": 1,
     "chance": 5
   },
@@ -51,21 +51,21 @@
   {
     "name": "INVINCIBILITY",
     "description": "Invincibility",
-    "sleep_time": 10,
+    "sleep_time": 90,
     "active": 1,
     "chance": 6
   },
   {
     "name": "INVISIBILITY",
     "description": "Invisibility",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 6
   },
   {
     "name": "GHOST",
     "description": "Ghost",
-    "sleep_time": 10,
+    "sleep_time": 30,
     "active": 1,
     "chance": 4
   },
@@ -100,56 +100,56 @@
   {
     "name": "SONIC_SPEED",
     "description": "Sonic Speed",
-    "sleep_time": 10,
+    "sleep_time": 30,
     "active": 1,
     "chance": 5
   },
   {
     "name": "SLOW_CHR",
     "description": "Slow Character",
-    "sleep_time": 10,
+    "sleep_time": 30,
     "active": 1,
     "chance": 5
   },
   {
     "name": "FULL_STAMINA",
     "description": "Full Stamina",
-    "sleep_time": 10,
+    "sleep_time": 90,
     "active": 1,
     "chance": 5
   },
   {
     "name": "LVL1_CROOK",
     "description": "Level 1 Crook",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 4
   },
   {
     "name": "LVL99_BOSS",
     "description": "Level 99 Boss",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 4
   },
   {
     "name": "DWARF_MODE",
     "description": "5'11 experience",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 5
   },
   {
     "name": "BIG_BOY",
     "description": "Big Boy",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 5
   },
   {
     "name": "HUSSEIN",
     "description": "Hussein",
-    "sleep_time": 10,
+    "sleep_time": 15,
     "active": 1,
     "chance": 4
   },
@@ -163,28 +163,28 @@
   {
     "name": "CYBERPUNK_EXPERIENCE",
     "description": "Cyberpunk Experience",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 4
   },
   {
     "name": "RANDOM_MODEL_SIZE",
     "description": "Random Model Size",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 6
   },
   {
     "name": "SPEED_EVERYONE",
     "description": "Everyone is faster",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 6
   },
   {
     "name": "SLOW_EVERYONE",
     "description": "Everyone is slower",
-    "sleep_time": 10,
+    "sleep_time": 60,
     "active": 1,
     "chance": 6
   },
@@ -198,6 +198,13 @@
   {
     "name": "TP_PLAYER_TO_NEARBY_ENEMY",
     "description": "Teleport player to closest enemy",
+    "sleep_time": 0,
+    "active": 1,
+    "chance": 6
+  },
+  {
+    "name": "ONE_FLASK",
+    "description": "One flask",
     "sleep_time": 0,
     "active": 1,
     "chance": 6
