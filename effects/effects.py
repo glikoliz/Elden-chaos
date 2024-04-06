@@ -97,7 +97,7 @@ class DISABLE_GRAVITY(Effect):
                     10202040,
                     23033030,
                     23033060,
-            ]:
+            ]: #if player jumps
                 self.pm.write_int(self.animation_addr, 0)
         except Exception as e:
             logging.exception(e)

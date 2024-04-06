@@ -133,7 +133,8 @@ class Funcs:
 
     def get_closest_enemy(self, player_coords: int):
         chr_count, chrset = get_chr_count_and_set(self.pm)
-        min_distance = [-1, 10000]  # addr, distance
+        res_addr = -1
+        res_distance = 10000
         player_x, player_y, player_z = (
             self.pm.read_float(player_coords),
             self.pm.read_float(player_coords + 0x04),
@@ -154,8 +155,10 @@ class Funcs:
                     )
                     distance = ((player_x - x)**2 + (player_y - y)**2 +
                                 (player_z - z)**2)**(1 / 2)
-                    if min_distance[1] > distance:
-                        min_distance = [coords, distance]
+                    
+                    if res_distance > distance:
+                        res_addr = coords
+                        res_distance = distance
         dungeon_count, dungeon_chrset = get_dungeon_chr_count_and_set(self.pm)
         for i in range(1, dungeon_count):
             enemyins = self.pm.read_longlong(dungeon_chrset + i * 0x10)
@@ -171,9 +174,10 @@ class Funcs:
                     )
                     distance = ((player_x - x)**2 + (player_y - y)**2 +
                                 (player_z - z)**2)**(1 / 2)
-                    if min_distance[1] > distance:
-                        min_distance = [coords, distance]
-        return min_distance
+                    if res_distance > distance:
+                        res_addr = coords
+                        res_distance = distance
+        return [res_addr, res_distance]
 
     def is_lvl_okay(self):
         lvl_addr = get_addr_from_list(self.pm, addr_list['CHR_LEVEL'])
