@@ -5,15 +5,10 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QLabel,
-    QFrame,
-    QMainWindow,
-    QGraphicsView,
-    QGraphicsScene,
-    QGraphicsRectItem,
-
+    QMainWindow
 )
-from PySide6.QtCore import QRect, Qt, QThread, QTimer, QPropertyAnimation, QUrl, Signal, Slot
-from PySide6.QtGui import QDesktopServices, QBrush, QPen, QColor
+from PySide6.QtCore import Qt, QThread, QTimer, QUrl, Signal
+from PySide6.QtGui import QDesktopServices
 
 import sys
 from threading import Thread
@@ -23,8 +18,8 @@ from time import sleep, time
 from lib.getaddress import get_random_func, get_dbg_func
 from gui.config_gui import EffectsApp
 from gui.messages_gui import MessageHandler
+from gui.overlay_gui import Overlay
 from lib.funcs import Funcs
-
 CHAOS_TIMER_MS = 30000
 
 
@@ -34,7 +29,7 @@ class OverlayController(QThread):
     def __init__(self, overlay):
         super().__init__()
         self.overlay = overlay
-        self.queue = ["", "", ""]
+        self.queue = ["", "", "", ""]
         self.i = 6
 
     def run(self):
@@ -45,19 +40,24 @@ class OverlayController(QThread):
             return
         self.i += 1
         effect_class, effect_name, effect_time = get_dbg_func(self.i)
+
+        self.queue.pop(0)
+        self.queue.append(effect_name)
+        if (self.i != 7):
+            self.updateSignal.emit(self.queue, -1, 2)
+
         # effect_class, effect_name, effect_time = get_random_func()
         # while effect_name in self.queue:
         #     effect_class, effect_name, effect_time = get_random_func()
-            
+
         Thread(target=self.start_effect, args=(
-            effect_class, effect_name, effect_time, self.i+2)).start()
-        self.queue.pop(0)
-        self.queue.append(effect_name)
-        if effect_time==0:
-            self.updateSignal.emit(self.queue, 0, 2)
+            effect_class, effect_name, effect_time, self.i+3)).start()
+
+        if effect_time == 0:
+            self.updateSignal.emit(self.queue, 0, 3)
         else:
-            self.updateSignal.emit(self.queue, 100, 2)
-            
+            self.updateSignal.emit(self.queue, 100, 3)
+
         QTimer.singleShot(0, self.overlay.start_animation)
 
     def start_effect(self, effect_class, effect_name, effect_time, ok):
@@ -65,15 +65,15 @@ class OverlayController(QThread):
         while funcs.is_player_in_cutscene():
             sleep(0.5)
         counter = 0
-        effect = effect_class()
-        effect.onStart()
-        self.overlay.change_text(self.queue)
+        # effect = effect_class()
+        # effect.onStart()
         if effect_time == 0:
-            while effect.onTick() != -1:
-                counter += 1
-                if (counter >= 120):
-                    break
-                sleep(1)
+            # while effect.onTick() != -1:
+            #     counter += 1
+            #     if (counter >= 120):
+            #         break
+            #     sleep(1)
+            pass
         else:
             start = time()
             i = time()-start
@@ -81,127 +81,22 @@ class OverlayController(QThread):
                 if funcs.is_player_in_cutscene():
                     while funcs.is_player_in_cutscene():
                         sleep(0.5)
-                    start=time()-i
-                    pass
-                effect.onTick()
-                self.updateSignal.emit(self.queue, 100-(i/effect_time)*100, ok-self.i)
+                    start = time()-i
+                # effect.onTick()
+                self.updateSignal.emit(
+                    self.queue, 100-(i/effect_time)*100, ok-self.i)
                 sleep(0.5)
                 i = time()-start
-        
+
         self.updateSignal.emit(self.queue, 0, ok-self.i)
         self.queue[ok-self.i] = effect_name
-        effect.onStop()
+        # effect.onStop()
 
     def stop_overlay(self):
         if self.overlay:
             self.overlay.hide()
             self.overlay.frame.resize(0, 0)
             self.overlay.animation_object.stop()
-
-
-class Overlay(QWidget):
-    def __init__(self, overlay_controller):
-        super().__init__()
-        self.setGeometry(0, 0, self.screen().size().width(),
-                         self.screen().size().height())
-        self.overlay_controller = overlay_controller
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setStyleSheet(
-            """
-            QWidget {
-                font-size: 30px;
-            }
-            QLabel {
-                color: white;
-            }
-        """
-        )
-
-        self.scene = QGraphicsScene(self)
-        self.view = QGraphicsView(self.scene, self)
-        self.view.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy(Qt.ScrollBarAlwaysOff))
-        self.view.setVerticalScrollBarPolicy(
-            Qt.ScrollBarPolicy(Qt.ScrollBarAlwaysOff))
-        self.view.setFrameStyle(QFrame.NoFrame)
-
-        self.view.setAttribute(Qt.WA_TranslucentBackground)
-        self.view.setStyleSheet("background: transparent;")
-
-        self.frame = QFrame(self)
-        self.frame.setStyleSheet("background-color: red;")
-        self.frame.setFrameStyle(QFrame.Panel | QFrame.Raised)
-        self.frame.move(0, 0)
-        self.frame.resize(self.screen().size().width(),
-                          self.screen().size().height()//50)
-
-        self.labels = [QLabel(self), QLabel(self), QLabel(self)]
-        self.rects = [
-            self.scene.addRect(0, 0, 70, 0, QPen(
-                Qt.NoPen), QBrush(QColor("green"))),
-            self.scene.addRect(0, 0, 70, 0, QPen(
-                Qt.NoPen), QBrush(QColor("green"))),
-            self.scene.addRect(0, 0, 70, 0, QPen(Qt.NoPen), QBrush(QColor("green")))]
-        self.gray_rects = [
-            QGraphicsRectItem(), QGraphicsRectItem(), QGraphicsRectItem()]
-        self.scene.addItem(self.gray_rects[0])
-        self.scene.addItem(self.gray_rects[1])
-        self.scene.addItem(self.gray_rects[2])
-
-        self.scene.setSceneRect(
-            0, 0, self.screen().size().width(), self.screen().size().height())
-        self.scene.setBackgroundBrush(Qt.transparent)
-
-        # self.worker = Worker()
-        self.overlay_controller.updateSignal.connect(self.set_rectangles)
-
-    @Slot(list, int, int)
-    def set_rectangles(self, queue, value, i):
-        screen = self.screen().size().width()
-        label_height = self.labels[0].fontMetrics().height()
-        rect_width = 70
-        fill_width = (value/100)*70
-        gray_width = rect_width - fill_width
-
-        if value == 0:
-            self.rects[i].setRect(0, 0, 0, 0)
-            self.gray_rects[i].setRect(0, 0, 0, 0)
-        else:
-            self.rects[i].setRect(
-                screen - rect_width - 10, i*40 + self.screen().size().height()//50 + 5, fill_width, label_height - 5)
-            self.gray_rects[i].setBrush(QBrush(QColor("gray")))
-            self.gray_rects[i].setPen(QPen(Qt.NoPen))
-            self.gray_rects[i].setRect(self.rects[i].rect().x(
-            )+fill_width, self.rects[i].rect().y(), gray_width, self.rects[i].rect().height())
-
-    def change_text(self, queue):
-        screen=self.screen().size().width()
-        for k in range(len(queue)):
-            self.labels[k].setText(queue[k])
-            self.labels[k].setGeometry(screen - self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()) - 70 -
-                        20, self.screen().size().height()//50 + 40*k, self.labels[k].fontMetrics().horizontalAdvance(self.labels[k].text()), 40)
-                
-    def start_animation(self):
-        self.animation_object = QPropertyAnimation(self.frame, b"geometry")
-        self.animation_object.setDuration(CHAOS_TIMER_MS)
-        self.animation_object.finished.connect(self.animation_finished)
-        self.animation_object.setStartValue(
-            QRect(0, 0, 0, self.screen().size().height()//50))
-        self.animation_object.setEndValue(
-            QRect(
-                0,
-                0,
-                self.screen().size().width(),
-                self.screen().size().height() // 50,
-            )
-        )
-        self.animation_object.start()
-
-    def animation_finished(self):
-        if not self.isHidden():
-            self.overlay_controller.run()
-
 
 class MainWidget(QWidget):
     def __init__(self):
