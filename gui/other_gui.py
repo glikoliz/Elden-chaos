@@ -2,7 +2,7 @@ import os
 import sys
 import shutil
 from datetime import datetime
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFileDialog
+from PySide6.QtWidgets import QPushButton, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFileDialog
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices
 from gui.messages_gui import MessageHandler

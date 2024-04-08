@@ -7,8 +7,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QMainWindow
 )
-from PySide6.QtCore import Qt, QThread, QTimer, QUrl, Signal
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtCore import QThread, QTimer, Signal
 
 import sys
 from threading import Thread

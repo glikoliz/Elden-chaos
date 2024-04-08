@@ -8,12 +8,8 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QPushButton,
     QHBoxLayout,
-    QDialog,
-    QLineEdit,
-    QLabel,
     QSpacerItem,
-    QSizePolicy,
-    QMessageBox
+    QSizePolicy
 )
 from PySide6.QtCore import Qt
 from functools import partial
