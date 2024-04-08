@@ -4,6 +4,7 @@ from importlib import import_module
 from random import choices
 import inspect
 
+
 def get_worldchrman(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
         rb"\x48\x8B\x05....\x48\x85\xC0\x74\x0F\x48\x39\x88", "eldenring.exe")
@@ -77,41 +78,46 @@ def get_dungeon_chr_count_and_set(pm: Pymem):
     chrset = pm.read_longlong(chrset + 0x18)
     return chr_count, chrset
 
-def get_list_of_nearby_enemies(pm: Pymem):
-    player_coords=get_addr_from_list(pm, ["worldchrman", [124168, 400, 104, 112]])
+
+def get_list_of_nearby_enemies(pm: Pymem) -> list:
+    player_coords = get_addr_from_list(
+        pm, ["worldchrman", [124168, 400, 104, 112]])
     player_x, player_y, player_z = (
         pm.read_float(player_coords),
         pm.read_float(player_coords + 0x04),
         pm.read_float(player_coords + 0x08),
     )
     chr_count, chrset = get_chr_count_and_set(pm)
-    newlist=[]
+    newlist = []
     for i in range(chr_count):
         enemy_addr = pm.read_longlong(chrset + i * 0x10)
         if enemy_addr:
-            alliance=pm.read_bytes(enemy_addr+0x6C, 1)
-            if alliance in [b'\x06', b'0'] and get_distance(pm, enemy_addr, player_x, player_y, player_z)<=200:
+            alliance = pm.read_bytes(enemy_addr+0x6C, 1)
+            if alliance in [b'\x06', b'0'] and get_distance(pm, enemy_addr, player_x, player_y, player_z) <= 200:
                 newlist.append(enemy_addr)
     chr_count, chrset = get_dungeon_chr_count_and_set(pm)
     for i in range(chr_count):
         enemy_addr = pm.read_longlong(chrset + i * 0x10)
         if enemy_addr:
-            alliance=pm.read_bytes(enemy_addr+0x6C, 1)
-            
-            if alliance in [b'\x06', b'0'] and get_distance(pm, enemy_addr, player_x, player_y, player_z)<=200:
+            alliance = pm.read_bytes(enemy_addr+0x6C, 1)
+
+            if alliance in [b'\x06', b'0'] and get_distance(pm, enemy_addr, player_x, player_y, player_z) <= 200:
                 newlist.append(enemy_addr)
     return newlist
 
-def get_distance(pm: Pymem, enemy_coords, player_x, player_y, player_z):
-    coords = (get_address_with_offsets(pm, enemy_coords, [0x190, 0x68, 0x0]) + 0x70)
+
+def get_distance(pm: Pymem, enemy_coords: int, player_x: float, player_y: float, player_z: float) -> float:
+    coords = (get_address_with_offsets(
+        pm, enemy_coords, [0x190, 0x68, 0x0]) + 0x70)
     x, y, z = (
         pm.read_float(coords),
         pm.read_float(coords + 0x04),
         pm.read_float(coords + 0x08),
     )
     distance = ((player_x - x)**2 + (player_y - y)**2 +
-            (player_z - z)**2)**(1 / 2)
+                (player_z - z)**2)**(1 / 2)
     return distance
+
 
 def get_chr_dbg_flags(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
@@ -119,7 +125,7 @@ def get_chr_dbg_flags(pm: Pymem) -> int:
     return address + pm.read_int(address + 2) + 7
 
 
-def get_spawn_addr(pm: Pymem, worldchrman) -> int:
+def get_spawn_addr(pm: Pymem, worldchrman: int) -> int:
     addr = worldchrman
     addr = pm.read_longlong(addr) + 0x1E1C0
     addr = pm.read_longlong(addr) + 0x18
@@ -142,11 +148,11 @@ def get_cs_flipper(pm: Pymem) -> int:
     return address + pm.read_int(address + 3) + 7
 
 
-def get_flask(pm: Pymem):
+def get_flask(pm: Pymem) -> int:
     return get_address_with_offsets(pm, pm.read_longlong(pm.base_address+0x044FF328), [0xB0, 0x80, 0xF8, 0x134])
 
 
-def get_field_area(pm: Pymem):
+def get_field_area(pm: Pymem) -> int:
     address = pm.pattern_scan_module(
         rb"\x48\x8B\x0D....\x48...\x44\x0F\xB6\x61.\xE8....\x48\x63\x87....\x48...\x48\x85\xC0",
         "eldenring.exe",
@@ -166,7 +172,7 @@ def p(v):  # For debug purposes, print address in nice format
         print(v)
 
 
-def get_random_func():
+def get_random_func() -> tuple:
     with open("resources/effects_list.json", "r") as json_file:
         data = json.load(json_file)
 
@@ -183,7 +189,7 @@ def get_random_func():
         effect_class = getattr(effect_module, class_name, None)
         if effect_class and inspect.isclass(effect_class):
             effect_functions.append(effect_class)
-            
+
     chances = [item["chance"] for item in active_functions]
     random_effect = choices(effect_functions, chances)[0]
     index = effect_functions.index(random_effect)
@@ -195,7 +201,7 @@ def get_random_func():
     )
 
 
-def get_dbg_func(i):
+def get_dbg_func(i) -> tuple:
     with open('resources/effects_list.json', 'r') as json_file:
         data = json.load(json_file)
     active_classes = [item for item in data if item['active'] == 1]
@@ -208,5 +214,6 @@ def get_dbg_func(i):
         class_name = item['name']
         effect_class = getattr(effect_module, class_name, None)
         if effect_class and inspect.isclass(effect_class):
-            class_objects.append((effect_class, item['description'], item['sleep_time']))
+            class_objects.append(
+                (effect_class, item['description'], item['sleep_time']))
     return class_objects[i] if i < len(class_objects) else None
