@@ -16,10 +16,13 @@ from pymem import Pymem
 from time import sleep, time
 
 from lib.getaddress import get_random_func, get_dbg_func
+from lib.funcs import Funcs
+
 from gui.config_gui import EffectsApp
 from gui.messages_gui import MessageHandler
 from gui.overlay_gui import Overlay
-from lib.funcs import Funcs
+from gui.other_gui import OtherWidget
+
 CHAOS_TIMER_MS = 30000
 
 
@@ -134,12 +137,12 @@ class MainAppWindow(QMainWindow):
 
         self.widget_main = MainWidget()
         self.widget_config = EffectsApp()
-        self.widget_other = QWidget()
+        self.widget_other = OtherWidget()
         self.btn_widget1 = QPushButton("Start Mod")
         self.btn_widget2 = QPushButton("Config")
         self.btn_widget3 = QPushButton("Other")
         self.btn_widget3.clicked.connect(self.showWidget3)
-        self.setupWidget3()
+        # self.setupWidget3()
 
         self.btn_widget1.clicked.connect(self.showWidget1)
         self.btn_widget2.clicked.connect(self.showWidget2)
@@ -183,23 +186,20 @@ class MainAppWindow(QMainWindow):
         self.widget_config.hide()
         self.widget_other.show()
 
-    def setupWidget3(self):
-        self.layout_widget3 = QVBoxLayout(self.widget_other)
-        self.layout_widget3.setAlignment(Qt.AlignmentFlag.AlignTop)
-        layout_button_description = QHBoxLayout()
-        description_label = QLabel("GitHub Repository:", self.widget_other)
-        description_label.setAlignment(Qt.AlignmentFlag.AlignTop)
-        layout_button_description.addWidget(description_label)
+    # def setupWidget3(self):
+    #     self.layout_widget3 = QVBoxLayout(self.widget_other)
+    #     self.layout_widget3.setAlignment(Qt.AlignmentFlag.AlignTop)
+    #     layout_button_description = QHBoxLayout()
+    #     description_label = QLabel("GitHub Repository:", self.widget_other)
+    #     description_label.setAlignment(Qt.AlignmentFlag.AlignTop)
+    #     layout_button_description.addWidget(description_label)
 
-        self.btn_github = QPushButton("GitHub Repository", self.widget_other)
-        self.btn_github.clicked.connect(self.openGitHub)
-        layout_button_description.addWidget(self.btn_github)
+    #     self.btn_github = QPushButton("GitHub Repository", self.widget_other)
+    #     self.btn_github.clicked.connect(self.openGitHub)
+    #     layout_button_description.addWidget(self.btn_github)
 
-        self.layout_widget3.addLayout(layout_button_description)
+    #     self.layout_widget3.addLayout(layout_button_description)
 
-    def openGitHub(self):
-        github_url = QUrl("https://github.com/glikoliz/Elden-chaos")
-        QDesktopServices.openUrl(github_url)
 
 
 def get_errors():  # TODO:make a checkbox to disable this function
