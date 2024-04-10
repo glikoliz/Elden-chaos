@@ -45,12 +45,12 @@ class OverlayController(QThread):
 
         self.queue.pop(0)
         self.queue.append(effect_name)
-        if (self.i != 7):
-            self.updateSignal.emit(self.queue, -1, 2)
+        # if (self.i != 7):
+        #     self.updateSignal.emit(self.queue, -1, 2)
 
-        # effect_class, effect_name, effect_time = get_random_func()
-        # while effect_name in self.queue:
-        #     effect_class, effect_name, effect_time = get_random_func()
+        effect_class, effect_name, effect_time = get_random_func()
+        while effect_name in self.queue:
+            effect_class, effect_name, effect_time = get_random_func()
 
         Thread(target=self.start_effect, args=(
             effect_class, effect_name, effect_time, self.i+3)).start()
@@ -67,14 +67,14 @@ class OverlayController(QThread):
         while funcs.is_player_in_cutscene():
             sleep(0.5)
         counter = 0
-        # effect = effect_class()
-        # effect.onStart()
+        effect = effect_class()
+        effect.onStart()
         if effect_time == 0:
-            # while effect.onTick() != -1:
-            #     counter += 1
-            #     if (counter >= 120):
-            #         break
-            #     sleep(1)
+            while effect.onTick() != -1:
+                counter += 1
+                if (counter >= 120):
+                    break
+                sleep(1)
             pass
         else:
             start = time()
@@ -84,7 +84,7 @@ class OverlayController(QThread):
                     while funcs.is_player_in_cutscene():
                         sleep(0.5)
                     start = time()-i
-                # effect.onTick()
+                effect.onTick()
                 self.updateSignal.emit(
                     self.queue, 100-(i/effect_time)*100, ok-self.i)
                 sleep(0.5)
@@ -92,7 +92,7 @@ class OverlayController(QThread):
 
         self.updateSignal.emit(self.queue, 0, ok-self.i)
         self.queue[ok-self.i] = effect_name
-        # effect.onStop()
+        effect.onStop()
 
     def stop_overlay(self):
         if self.overlay:
@@ -141,7 +141,6 @@ class MainAppWindow(QMainWindow):
         self.btn_widget2 = QPushButton("Config")
         self.btn_widget3 = QPushButton("Other")
         self.btn_widget3.clicked.connect(self.showWidget3)
-        # self.setupWidget3()
 
         self.btn_widget1.clicked.connect(self.showWidget1)
         self.btn_widget2.clicked.connect(self.showWidget2)
@@ -184,21 +183,6 @@ class MainAppWindow(QMainWindow):
         self.widget_main.hide()
         self.widget_config.hide()
         self.widget_other.show()
-
-    # def setupWidget3(self):
-    #     self.layout_widget3 = QVBoxLayout(self.widget_other)
-    #     self.layout_widget3.setAlignment(Qt.AlignmentFlag.AlignTop)
-    #     layout_button_description = QHBoxLayout()
-    #     description_label = QLabel("GitHub Repository:", self.widget_other)
-    #     description_label.setAlignment(Qt.AlignmentFlag.AlignTop)
-    #     layout_button_description.addWidget(description_label)
-
-    #     self.btn_github = QPushButton("GitHub Repository", self.widget_other)
-    #     self.btn_github.clicked.connect(self.openGitHub)
-    #     layout_button_description.addWidget(self.btn_github)
-
-    #     self.layout_widget3.addLayout(layout_button_description)
-
 
 
 def get_errors():  # TODO:make a checkbox to disable this function
